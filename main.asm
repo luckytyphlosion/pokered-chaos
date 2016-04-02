@@ -6724,3 +6724,11 @@ BeachHouse_GFX:
 BeachHouse_Block:
 	INCBIN "gfx/blocksets/beachhouse.bst"
 ENDC
+
+SECTION "hblankfar",ROMX
+
+INCLUDE "engine/hblank.asm"
+
+SECTION "exhf",ROMX
+
+INCLUDE "engine/ex_home_functions.asm"

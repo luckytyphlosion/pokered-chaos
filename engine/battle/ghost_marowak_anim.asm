@@ -74,7 +74,7 @@ CopyMonPicFromBGToSpriteVRAM: ; 7092a (1c:492a)
 	ld [hli], a
 	ld a, d
 	ld [hli], a
-	ld a, $10 ; use OBP1
+	ld a, $01 ; use OBP1
 	ld [hli], a
 	inc d
 	dec c

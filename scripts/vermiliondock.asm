@@ -155,10 +155,10 @@ VermilionDock_EmitSmokePuff: ; 1dc59 (7:5c59)
 	ret
 
 VermilionDockOAMBlock: ; 1dc74 (7:5c74)
-	db $fc, $10
-	db $fd, $10
-	db $fe, $10
-	db $ff, $10
+	db $fc, $01
+	db $fd, $01
+	db $fe, $01
+	db $ff, $01
 
 VermilionDock_1dc7c: ; 1dc7c (7:5c7c)
 	ld h, d

@@ -309,6 +309,11 @@ hCoordsInFrontOfPlayerMatch EQU $FFEA
 
 hSpriteAnimFrameCounter EQU $FFEA
 
+hMeme EQU $FFEF
+hLastBGP EQU $FFF0
+hLastOBP0 EQU $FFF1
+hLastOBP1 EQU $FFF2
+
 H_WHOSETURN EQU $FFF3 ; 0 on player’s turn, 1 on enemy’s turn
 
 ; bit 0: draw HP fraction to the right of bar instead of below (for party menu)

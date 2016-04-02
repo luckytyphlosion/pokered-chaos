@@ -4,7 +4,6 @@ VBlank::
 	push bc
 	push de
 	push hl
-
 	ld a, [H_LOADEDROMBANK]
 	ld [wVBlankSavedROMBank], a
 
@@ -19,13 +18,14 @@ VBlank::
 	ld a, [hWY]
 	ld [rWY], a
 .ok
-
 	call AutoBgMapTransfer
 	call VBlankCopyBgMap
 	call RedrawRowOrColumn
 	call VBlankCopy
 	call VBlankCopyDouble
 	call UpdateMovingBgTiles
+	call WriteCGBPalettes
+	
 	call $ff80 ; hOAMDMA
 	ld a, Bank(PrepareOAMData)
 	ld [H_LOADEDROMBANK], a
@@ -77,7 +77,25 @@ VBlank::
 	ld a, [hDisableJoypadPolling]
 	and a
 	call z, ReadJoypad
-
+	
+	
+	ld a, [hMeme]
+	and a
+	jr z, .continue
+	dec a
+	jr z, .changePal
+	ld [hMeme], a
+	jr .continue
+.changePal
+	ld a, [wCurPalette]
+	inc a
+	and $0f
+	ld [wCurPalette], a
+	call Random
+	and $7f
+	add $80
+	ld [hMeme], a
+.continue
 	ld a, [wVBlankSavedROMBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

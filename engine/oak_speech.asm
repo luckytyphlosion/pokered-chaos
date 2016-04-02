@@ -5,20 +5,28 @@ SetDefaultNames: ; 60ca (1:60ca)
 	push af
 	ld a, [wd732]
 	push af
+	ld a, [wCurPalette]
+	push af
 	ld hl, wPlayerName
-	ld bc, $d8a
+	ld bc, wBoxDataEnd - wPlayerName
 	xor a
 	call FillMemory
 	ld hl, wSpriteStateData1
-	ld bc, $200
+	ld bc, wOAMBuffer - wSpriteStateData1
 	xor a
 	call FillMemory
+	pop af
+	ld [wCurPalette], a
+	dec a
+	ld [wLastPalette], a ; force reload just in case vblank/hblank happened
 	pop af
 	ld [wd732], a
 	pop af
 	ld [wOptions], a
 	pop af
 	ld [wLetterPrintingDelayFlags], a
+	ld a, 1
+	ld [hMeme], a
 	ld a, [wOptionsInitialized]
 	and a
 	call z, InitOptions

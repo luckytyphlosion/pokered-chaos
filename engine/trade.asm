@@ -708,20 +708,20 @@ Trade_CircleOAMPointers: ; 41574 (10:5574)
 	db $18,$18
 
 Trade_CircleOAM0: ; 41584 (10:5584)
-	db $38,$10,$39,$10
-	db $3A,$10,$3B,$10
+	db $38,$01,$39,$01
+	db $3A,$01,$3B,$01
 
 Trade_CircleOAM1: ; 4158c (10:558c)
-	db $39,$30,$38,$30
-	db $3B,$30,$3A,$30
+	db $39,$21,$38,$21
+	db $3B,$21,$3A,$21
 
 Trade_CircleOAM2: ; 41594 (10:5594)
-	db $3A,$50,$3B,$50
-	db $38,$50,$39,$50
+	db $3A,$41,$3B,$41
+	db $38,$41,$39,$41
 
 Trade_CircleOAM3: ; 4159c (10:559c)
-	db $3B,$70,$3A,$70
-	db $39,$70,$38,$70
+	db $3B,$61,$3A,$61
+	db $39,$61,$38,$61
 
 ; a = species
 Trade_LoadMonSprite: ; 415a4 (10:55a4)

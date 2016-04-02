@@ -146,7 +146,7 @@ AnimateShootingStar: ; 70044 (1c:4044)
 	ret
 
 SmallStarsOAM: ; 700ee (1c:40ee)
-	db $00,$00,$A2,$90
+	db $00,$00,$A2,$81
 SmallStarsOAMEnd:
 
 SmallStarsWaveCoordsPointerTable: ; 700f2 (1c:40f2)
@@ -233,10 +233,10 @@ GameFreakLogoOAMData: ; 70140 (1c:4140)
 GameFreakLogoOAMDataEnd:
 
 GameFreakShootingStarOAMData: ; 70180 (1c:4180)
-	db $00,$A0,$A0,$10
-	db $00,$A8,$A0,$30
-	db $08,$A0,$A1,$10
-	db $08,$A8,$A1,$30
+	db $00,$A0,$A0,$01
+	db $00,$A8,$A0,$21
+	db $08,$A0,$A1,$01
+	db $08,$A8,$A1,$21
 GameFreakShootingStarOAMDataEnd:
 
 FallingStar: ; 70190 (1c:4190)

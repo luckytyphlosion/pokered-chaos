@@ -2591,9 +2591,6 @@ CheckIfAlreadyEngaged:: ; 33dd (0:33dd)
 	xor a
 	ret
 
-PlayTrainerMusic:: ; 33e8 (0:33e8)
-	jpab _PlayTrainerMusic
-
 ; checks if the player's coordinates match an arrow movement tile's coordinates
 ; and if so, decodes the RLE movement data
 ; b = player Y

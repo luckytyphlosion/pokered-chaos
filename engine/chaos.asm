@@ -294,8 +294,13 @@ CE_InstantText:
 	ret
 	
 CE_InvisibleText:
+	call CheckIfNextFrameWillReplaceChaosEffect
 	ld hl, wFlags_D733
+	jr z, .resetFlag
 	set 5, [hl]
+	ret
+.resetFlag
+	res 5, [hl]
 	ret
 	
 CE_Redbar:

@@ -2513,6 +2513,7 @@ wDestinationWarpID:: ; d42f
 
 wOverworldChaosEffects::
 	ds 64
+wBattleChaosEffects::
 	ds 64
 
 wNumSigns:: ; d4b0

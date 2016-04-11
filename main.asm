@@ -25,6 +25,7 @@ ResetStatusAndHalveMoneyOnBlackout::
 	ld [wBattleResult], a
 	ld [wWalkBikeSurfState], a
 	ld [wIsInBattle], a
+	ld [hTrueIsInBattle], a
 	ld [wMapPalOffset], a
 	ld [wNPCMovementScriptFunctionNum], a
 	ld [hJoyHeld], a
@@ -4813,8 +4814,6 @@ INCLUDE "engine/battle/moveEffects/recoil_effect.asm"
 INCLUDE "engine/battle/moveEffects/conversion_effect.asm"
 INCLUDE "engine/battle/moveEffects/haze_effect.asm"
 INCLUDE "engine/battle/get_trainer_name.asm"
-INCLUDE "engine/random.asm"
-
 
 SECTION "NPC Sprites 2", ROMX, BANK[NPC_SPRITES_2]
 
@@ -4944,7 +4943,10 @@ INCLUDE "engine/overworld/npc_movement.asm"
 INCLUDE "engine/overworld/doors.asm"
 INCLUDE "engine/overworld/ledges.asm"
 
-
+InvisibleText:
+	ds $400
+InvisibleTextEnd:
+	
 SECTION "bank7",ROMX,BANK[$7]
 
 INCLUDE "data/mapHeaders/cinnabarisland.asm"
@@ -5537,6 +5539,11 @@ INCLUDE "engine/menu/pokedex.asm"
 INCLUDE "engine/trade.asm"
 INCLUDE "engine/intro.asm"
 INCLUDE "engine/trade2.asm"
+INCLUDE "engine/hblank.asm"
+INCLUDE "engine/print_number.asm"
+INCLUDE "engine/overworld/reload_map_sprites.asm"
+INCLUDE "engine/overworld/advance_player_sprite.asm"
+INCLUDE "engine/chaos.asm"
 
 
 SECTION "bank11",ROMX,BANK[$11]
@@ -6724,11 +6731,3 @@ BeachHouse_GFX:
 BeachHouse_Block:
 	INCBIN "gfx/blocksets/beachhouse.bst"
 ENDC
-
-SECTION "hblankfar",ROMX
-
-INCLUDE "engine/hblank.asm"
-
-SECTION "exhf",ROMX
-
-INCLUDE "engine/ex_home_functions.asm"

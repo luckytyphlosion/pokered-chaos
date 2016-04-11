@@ -47,6 +47,8 @@ VBlank::
 
 .skipDec
 	call FadeOutAudio
+	
+	callab Music_DoLowHealthAlarm
 
 	ld a, [wAudioROMBank] ; music ROM bank
 	ld [H_LOADEDROMBANK], a
@@ -67,7 +69,7 @@ VBlank::
 	call Audio3_UpdateMusic
 .afterMusic
 
-	callab Music_DoLowHealthAlarm
+	
 	callba TrackPlayTime ; keep track of time played
 
 	ld a, [hDisableJoypadPolling]

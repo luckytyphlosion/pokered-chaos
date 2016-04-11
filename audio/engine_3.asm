@@ -159,6 +159,13 @@ Audio3_PlayNextNote: ; 7d244 (1f:5244)
 	add hl, bc
 	res 4, [hl]
 	res 5, [hl]
+	ld a, c
+	cp CH4
+	jr nz, .beginChecks
+	ld a, [wLowHealthAlarm] ;low health alarm enabled?
+	bit 7, a
+	ret nz
+.beginChecks
 	call Audio3_endchannel
 	ret
 

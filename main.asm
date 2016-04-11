@@ -5546,7 +5546,6 @@ INCLUDE "engine/overworld/advance_player_sprite.asm"
 INCLUDE "engine/chaos/core.asm"
 INCLUDE "engine/overworld/engage_map_trainer.asm"
 
-
 SECTION "bank11",ROMX,BANK[$11]
 
 INCLUDE "data/mapHeaders/lavendertown.asm"

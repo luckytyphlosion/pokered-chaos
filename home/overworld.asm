@@ -335,9 +335,13 @@ BikeSpeedup:: ; 06a0 (0:06a0)
 	ld a,[wNPCMovementScriptPointerTableNum]
 	and a
 	ret nz
+	ld a, [wFlags_D733]
+	bit 6, a
+	jr nz, .checkForButtons
 	ld a,[wCurMap]
 	cp a,ROUTE_17 ; Cycling Road
 	jr nz,.goFaster
+.checkForButtons
 	ld a,[hJoyHeld]
 	and a,D_UP | D_LEFT | D_RIGHT
 	ret nz
@@ -1559,9 +1563,12 @@ JoypadOverworld:: ; 0f4d (0:0f4d)
 	ld a,[wFlags_D733]
 	bit 3,a ; check if a trainer wants a challenge
 	jr nz,.notForcedDownwards
+	bit 6, a
+	jr nz, .forcedDownwards
 	ld a,[wCurMap]
 	cp a,ROUTE_17 ; Cycling Road
 	jr nz,.notForcedDownwards
+.forcedDownwards
 	ld a,[hJoyHeld]
 	and a,D_DOWN | D_UP | D_LEFT | D_RIGHT | B_BUTTON | A_BUTTON
 	jr nz,.notForcedDownwards
@@ -2099,9 +2106,9 @@ SwitchToMapRomBank:: ; 12bc (0:12bc)
 	ld hl,MapHeaderBanks
 	add hl,bc
 	ld a,[hl]
-	ld [$ffe8],a ; save map ROM bank
+	push af ; save map ROM bank
 	call BankswitchBack
-	ld a,[$ffe8]
+	pop af
 	ld [H_LOADEDROMBANK],a
 	ld [MBC1RomBank],a ; switch to map ROM bank
 	pop bc

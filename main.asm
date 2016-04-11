@@ -5545,6 +5545,7 @@ INCLUDE "engine/overworld/reload_map_sprites.asm"
 INCLUDE "engine/overworld/advance_player_sprite.asm"
 INCLUDE "engine/chaos/core.asm"
 INCLUDE "engine/overworld/engage_map_trainer.asm"
+INCLUDE "engine/offscreen_tiles.asm"
 
 SECTION "bank11",ROMX,BANK[$11]
 

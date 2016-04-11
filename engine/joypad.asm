@@ -2,10 +2,11 @@ _Joypad::
 ; hJoyReleased: (hJoyLast ^ hJoyInput) & hJoyLast
 ; hJoyPressed:  (hJoyLast ^ hJoyInput) & hJoyInput
 
-	ld a, [hJoyInput]
+	ld a, [hTrueJoyInput]
 	cp A_BUTTON + B_BUTTON + SELECT + START ; soft reset
 	jp z, TrySoftReset
-
+SoftResetDidNotWork:
+	ld a, [hJoyInput]
 	ld b, a
 	ld a, [hJoyLast]
 	ld e, a
@@ -48,14 +49,13 @@ DiscardButtonPresses:
 	ret
 
 TrySoftReset:
-	call DelayFrame
-
-	; deselect (redundant)
-	ld a, $30
-	ld [rJOYP], a
-
 	ld hl, hSoftReset
+.loop
+	call DelayFrame
+	ld a, [hTrueJoyInput]
+	and A_BUTTON | B_BUTTON | START | SELECT
+	cp A_BUTTON | B_BUTTON | START | SELECT
+	jp nz, SoftResetDidNotWork
 	dec [hl]
-	jp z, SoftReset
-
-	jp Joypad
+	jr nz, .loop
+	jp SoftReset

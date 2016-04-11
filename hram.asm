@@ -291,6 +291,8 @@ hOaksAideNumMonsOwned EQU $FFDD
 hItemToRemoveID    EQU $FFDB
 hItemToRemoveIndex EQU $FFDC
 
+hSavedWRAMBank EQU $FFDF
+
 hVendingMachineItem  EQU $FFDB
 hVendingMachinePrice EQU $FFDC ; 3-byte BCD number
 
@@ -305,6 +307,8 @@ hNewPartyLength EQU $FFE4
 hDividend2 EQU $FFE5
 hDivisor2  EQU $FFE6
 hQuotient2 EQU $FFE7
+
+hTrueJoyInput EQU $FFE8
 
 hSpriteVRAMSlotAndFacing EQU $FFE9
 

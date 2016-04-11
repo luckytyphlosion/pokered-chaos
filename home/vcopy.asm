@@ -203,51 +203,21 @@ AutoBgMapTransfer:: ; 1d57 (0:1d57)
 	ld a, [H_AUTOBGTRANSFERDEST]
 	and a
 	jr nz, .oldMode
-	xor a
-	ld l, a
-	ld h, $d0
-	ld a, [H_AUTOBGTRANSFERDEST + 1]
-	ld d, a
 ; change to wram bank 2
 	ld a, 2
-	ld [rSVBK], a
-	ld b, 18
-.hdmaLoop
-	ld a, h
+	ld [rSVBK], a ; change wram bank to 1 to get tilemap buffer
+	ld a, $d0 ; write source in wram
 	ld [rHDMA1], a
-	ld a, l
-	ld [rHDMA2], a
-	ld [rHDMA4], a ; e and l are always the same
-	ld a, d
-	ld [rHDMA3], a
-	xor a ; value of 00 = $10 bytes
-	ld [rHDMA5], a
-; copy remaining 4 bytes manually
-	set 4, l ; +$10
-	ld e, l
-rept 3
-	ld a, [hli]
-	ld [de], a
-	inc e
-endr
-	; last tile
-	ld a, [hl]
-	ld [de], a
-	; done?
-	dec b
-	jr z, .done
-	; move to next row
-	ld a, BG_MAP_WIDTH - (SCREEN_WIDTH - 1)
-	add l
-	ld l, a
-	jr nc, .hdmaLoop
-	inc h
-	inc d
-	jr .hdmaLoop
-; done
-.done
 	xor a
-	ld [rSVBK], a
+	ld [rHDMA2], a
+	ld a, [H_AUTOBGTRANSFERDEST + 1] ; copy address from H_AUTOBGTRANSFERDEST to rHDMA3 and 4
+	ld [rHDMA3], a					; note that hall of fame breaks because it sets H_AUTOBGTRANSFERDEST to a non-multiple of $10
+	ld a, [H_AUTOBGTRANSFERDEST]	; luckily, it's the only thing that does so
+	ld [rHDMA4], a
+	ld a, 36 - 1					; number of multiple of $10 chunks to copy
+	ld [rHDMA5], a					; writing this also doubles as starting the transfer
+	xor a
+	ld [rSVBK], a ; change wram bank back to normal
 	ret
 .oldMode
 	ld hl,[sp + 0]

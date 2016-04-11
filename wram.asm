@@ -2110,6 +2110,7 @@ wEvolutionOccurred:: ; d121
 wVBlankSavedROMBank:: ; d122
 	ds 1
 
+wTempSwapROMBank::
 wFarCopyDataSavedROMBank::
 	ds 1
 
@@ -2998,7 +2999,7 @@ wd72e:: ; d72e
 	ds 1
 
 	ds 1
-
+	
 wd730:: ; d730
 ; bit 0: NPC sprite being moved by script
 ; bit 5: ignore joypad input
@@ -3006,6 +3007,9 @@ wd730:: ; d730
 ; bit 7: set if joypad states are being simulated in the overworld or an NPC's movement is being scripted
 	ds 1
 
+wNewEncounterRateFlags::
+; bits 0-1: which encounter rate mod
+; bits 2-7: saved encounter rate
 	ds 1
 
 wd732:: ; d732
@@ -3028,19 +3032,23 @@ wFlags_D733:: ; d733
 ; bit 2: skip the joypad check in CheckWarpsNoCollision (used for the forced warp down the waterfall in the Seafoam Islands)
 ; bit 3: trainer wants to battle
 ; bit 4: use variable [wCurMapScript] instead of the provided index for next frame's map script (used to start battle when talking to trainers)
-; bit 5: inaccesible vram text
+; bit 5: invisible text
+; bit 6: force cycling road
 ; bit 7: used fly out of battle
 	ds 1
 
 wBeatLorelei:: ; d734
 ; bit 1: set when you beat Lorelei and reset in Indigo Plateau lobby
 ; the game uses this to tell when Elite 4 events need to be reset
-	ds 2
+	ds 1
+	
+	ds 1
 
 wd736:: ; d736
 ; bit 0: check if the player is standing on a door and make him walk down a step if so
 ; bit 1: the player is currently stepping down from a door
 ; bit 2: standing on a warp
+; bit 3: inaccesible vram copies
 ; bit 6: jumping down a ledge / fishing animation
 ; bit 7: player sprite spinning due to spin tiles (Rocket hidehout / Viridian Gym)
 	ds 1
@@ -3048,7 +3056,11 @@ wd736:: ; d736
 wCompletedInGameTradeFlags:: ; d737
 	ds 2
 
-	ds 2
+wJoyInputModifier::
+	ds 1
+	
+wJoypadChaosIndex::
+	ds 1
 
 wWarpedFromWhichWarp:: ; d73b
 	ds 1
@@ -3127,7 +3139,7 @@ wCurMapScript:: ; da39
 ; index of current map script, mostly used as index for function pointer array
 ; mostly copied from map-specific map script pointer and wirtten back later
 	ds 1
-
+	
 	ds 7
 
 wPlayTimeHours:: ; da41

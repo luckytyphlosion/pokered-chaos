@@ -62,6 +62,7 @@ ReplaceChaosEffect:
 	push hl
 	push de
 	call GetChaosEffectTypeAndNumberOfChaosEffects
+	dec c
 	ld b, c
 	call DetermineBitmaskForRandomRange
 	ld c, a
@@ -86,15 +87,15 @@ ReplaceChaosEffect:
 CheckChaosEffectType:
 	ld a, [hTrueIsInBattle]
 	and a
-	ld a, $0
-	jr z, .gotEffect
+	ld a, $1
+	jr nz, .gotEffect
 	
 	ld a, [hWY]
 	and a
-	ld a, $1
+	ld a, $2
 	jr z, .gotEffect
 	
-	ld a, $2
+	xor a
 .gotEffect
 	ld [hChaosEffectType], a
 	ret
@@ -115,11 +116,12 @@ ChaosJumptables:
 	dw ChaosEffectOverworldJumptable
 	dw ChaosEffectBattleJumptable
 	dw ChaosEffectMenuJumptable
-	
-; jumptables
-INCLUDE "engine/chaos/battle_list.asm"
-INCLUDE "engine/chaos/menu_list.asm"
-INCLUDE "engine/chaos/overworld_list.asm"
+
+; trolls code
+INCLUDE "engine/chaos/battle.asm"
+INCLUDE "engine/chaos/menu.asm"
+INCLUDE "engine/chaos/overworld.asm"
+INCLUDE "engine/chaos/universal.asm"
 
 NUM_OVERWORLD_CHAOS_EFFECTS EQU (ChaosEffectOverworldJumptableEnd - ChaosEffectOverworldJumptable) / 2 - 1
 NUM_BATTLE_CHAOS_EFFECTS EQU (ChaosEffectBattleJumptableEnd - ChaosEffectBattleJumptable) / 2 - 1
@@ -134,7 +136,6 @@ GetChaosEffectTypeAndNumberOfChaosEffects:
 	ld a, [$ff00+c]
 	ld c, a
 	ret
-
 
 CE_AddNewChaosEffect:
 ; get effect type, check that there aren't already 31 effects.
@@ -200,12 +201,12 @@ DetermineBitmaskForRandomRange:
 	ret z
 	ld c, a
 	ld a, $ff
+	jr .handleLoop
 .loop
-	sla c
-	jr c, .done
 	srl a
-	jr .loop
-.done
+.handleLoop
+	sla c
+	jr nc, .loop
 	ret
 
 GetRandomRangeFor16BitValue:
@@ -265,9 +266,3 @@ CheckIfNextFrameWillReplaceChaosEffect:
 	ret z
 	cp 59
 	ret
-
-; trolls code
-INCLUDE "engine/chaos/battle.asm"
-INCLUDE "engine/chaos/menu.asm"
-INCLUDE "engine/chaos/overworld.asm"
-INCLUDE "engine/chaos/universal.asm"

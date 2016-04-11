@@ -5,7 +5,7 @@ TryDoWildEncounter: ; 13870 (4:7870)
 	and a
 	ret nz
 	ld a, [wd736]
-	and a
+	and %11000111
 	ret nz
 	callab IsPlayerStandingOnDoorTileOrWarpTile
 	jr nc, .notStandingOnDoorOrWarpTile
@@ -77,7 +77,7 @@ TryDoWildEncounter: ; 13870 (4:7870)
 	ld [wCurEnemyLVL], a
 	push de
 	ld c, CHAOS_TYPE_OVERWORLD
-	ld de, CHAOS_OVERWORLD_ALL_ENCOUNTERS_JYNX
+	ld de, CE_OW_ALL_ENCOUNTERS_JYNX
 	call IsChaosEffectActive
 	pop de
 	ld a, [hl]

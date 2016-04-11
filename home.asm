@@ -325,7 +325,7 @@ PlayCry:: ; 13d0 (0:13d0)
 	push de
 	ld b, a
 	ld c, CHAOS_TYPE_BATTLE
-	ld de, CHAOS_BATTLE_ALL_CRIES_JYNX
+	ld de, CE_BTL_ALL_CRIES_JYNX
 	call IsChaosEffectActive
 	pop de
 	ld a, b

@@ -25,6 +25,7 @@ ReadJoypad::
 	or b
 
 	ld [hJoyInput], a
+	ld [hTrueJoyInput], a
 
 	ld a, 1 << 4 + 1 << 5 ; deselect keys
 	ld [rJOYP], a

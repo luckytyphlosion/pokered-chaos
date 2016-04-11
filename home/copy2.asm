@@ -14,6 +14,14 @@ FarCopyDataDouble::
 	ld l,e
 	ld e,a
 	
+	call CopyDataDouble
+	
+	pop af
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	ret
+
+CopyDataDouble:
 	inc b
 	inc c
 	jr .handleLoop
@@ -27,11 +35,8 @@ FarCopyDataDouble::
 	jr nz, .expandloop
 	dec b
 	jr nz, .expandloop
-	pop af
-	ld [H_LOADEDROMBANK], a
-	ld [MBC1RomBank], a
 	ret
-
+	
 CopyVideoData::
 ; Wait for the next VBlank, then copy c 2bpp
 ; tiles from b:de to hl, 8 tiles at a time.
@@ -49,6 +54,25 @@ CopyVideoData::
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 
+	ld a, [wd736]
+	bit 3, a
+	jr z, .regularCopy
+	push hl
+	ld h, d
+	ld l, e
+	pop de
+	
+	swap c
+	ld a,$f
+	and c
+	ld b,a
+	ld a,$f0
+	and c
+	ld c,a
+	
+	call CopyData
+	jr .doneInaccessibleCopy
+.regularCopy
 	ld a, e
 	ld [H_VBCOPYSRC], a
 	ld a, d
@@ -67,6 +91,7 @@ CopyVideoData::
 .done
 	ld [H_VBCOPYSIZE], a
 	call DelayFrame
+.doneInaccessibleCopy
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
@@ -98,6 +123,12 @@ CopyVideoDataDouble::
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 
+	ld a, [wd736]
+	bit 3, a
+	jr z, .regularCopy
+	call CopyDataDouble
+	jr .doneInaccesibleCopy
+.regularCopy
 	ld a, e
 	ld [H_VBCOPYDOUBLESRC], a
 	ld a, d
@@ -116,6 +147,7 @@ CopyVideoDataDouble::
 .done
 	ld [H_VBCOPYDOUBLESIZE], a
 	call DelayFrame
+.doneInaccesibleCopy
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

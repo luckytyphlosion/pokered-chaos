@@ -2110,6 +2110,7 @@ wEvolutionOccurred:: ; d121
 wVBlankSavedROMBank:: ; d122
 	ds 1
 
+wFarCopyDataSavedROMBank::
 	ds 1
 
 wIsKeyItem:: ; d124
@@ -2310,6 +2311,7 @@ wOptions:: ; d355
 wObtainedBadges:: ; d356
 	flag_array 8
 
+wSavedOptions::
 	ds 1
 
 wLetterPrintingDelayFlags:: ; d358
@@ -2509,17 +2511,9 @@ wDestinationWarpID:: ; d42f
 ; if $ff, the player's coordinates are not updated when entering the map
 	ds 1
 
-wTempBGP::
-	ds 8
-wTempOBP0::
-	ds 8
-wTempOBP1::
-	ds 8
-wLastPalette::
-	ds 1
-wCurPalette::
-	ds 1
-	ds 110
+wOverworldChaosEffects::
+	ds 64
+	ds 64
 
 wNumSigns:: ; d4b0
 ; number of signs in the current map (up to 16)
@@ -2856,10 +2850,25 @@ wSeafoamIslands5CurScript:: ; d668
 wRoute18GateCurScript:: ; d669
 	ds 1
 
-	ds 78
+	ds 14
 wGameProgressFlagsEnd::
 
-	ds 56
+wMenuChaosEffects::
+	ds 64
+	
+
+wTempBGP::
+	ds 8
+wTempOBP0::
+	ds 8
+wTempOBP1::
+	ds 8
+wLastPalette::
+	ds 1
+wCurPalette::
+	ds 1
+
+	ds 30
 
 wObtainedHiddenItemsFlags::
 	ds 14
@@ -3018,6 +3027,7 @@ wFlags_D733:: ; d733
 ; bit 2: skip the joypad check in CheckWarpsNoCollision (used for the forced warp down the waterfall in the Seafoam Islands)
 ; bit 3: trainer wants to battle
 ; bit 4: use variable [wCurMapScript] instead of the provided index for next frame's map script (used to start battle when talking to trainers)
+; bit 5: inaccesible vram text
 ; bit 7: used fly out of battle
 	ds 1
 

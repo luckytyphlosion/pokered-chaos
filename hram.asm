@@ -297,6 +297,9 @@ hVendingMachinePrice EQU $FFDC ; 3-byte BCD number
 ; the first tile ID in a sequence of tile IDs that increase by 1 each step
 hStartTileID EQU $FFE1
 
+hChaosEffectType EQU $FFE2
+hTrueIsInBattle EQU $FFE3
+
 hNewPartyLength EQU $FFE4
 
 hDividend2 EQU $FFE5
@@ -309,7 +312,8 @@ hCoordsInFrontOfPlayerMatch EQU $FFEA
 
 hSpriteAnimFrameCounter EQU $FFEA
 
-hMeme EQU $FFEF
+hDoChaosEffects EQU $FFEF
+
 hLastBGP EQU $FFF0
 hLastOBP0 EQU $FFF1
 hLastOBP1 EQU $FFF2
@@ -322,7 +326,10 @@ hFlags_0xFFF6 EQU $FFF6
 
 hFieldMoveMonMenuTopMenuItemX EQU $FFF7
 
-hDisableJoypadPolling EQU $FFF9
-
 hJoyInput EQU $FFF8
 
+hDisableJoypadPolling EQU $FFF9
+
+hNumOverworldChaosEffects EQU $FFFA
+hNumBattleChaosEffects EQU $FFFB
+hNumMenuChaosEffects EQU $FFFC

@@ -6883,11 +6883,13 @@ InitBattleCommon: ; 3ef3d (f:6f3d)
 	ld [wEnemyMonPartyPos], a
 	ld a, $2
 	ld [wIsInBattle], a
+	ld [hTrueIsInBattle], a
 	jp _InitBattleCommon
 
 InitWildBattle: ; 3ef8b (f:6f8b)
 	ld a, $1
 	ld [wIsInBattle], a
+	ld [hTrueIsInBattle], a
 	call LoadEnemyMonData
 	call DoBattleTransitionAndInitBattleVariables
 	ld a, [wCurOpponent]

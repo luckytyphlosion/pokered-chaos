@@ -1,62 +1,35 @@
-FarCopyData2::
-; Identical to FarCopyData, but uses hROMBankTemp
-; as temp space instead of wBuffer.
-	ld [hROMBankTemp],a
-	ld a,[H_LOADEDROMBANK]
-	push af
-	ld a,[hROMBankTemp]
-	ld [H_LOADEDROMBANK],a
-	ld [MBC1RomBank],a
-	call CopyData
-	pop af
-	ld [H_LOADEDROMBANK],a
-	ld [MBC1RomBank],a
-	ret
-
-FarCopyData3::
-; Copy bc bytes from a:de to hl.
-	ld [hROMBankTemp],a
-	ld a,[H_LOADEDROMBANK]
-	push af
-	ld a,[hROMBankTemp]
-	ld [H_LOADEDROMBANK],a
-	ld [MBC1RomBank],a
-	push hl
-	push de
-	push de
-	ld d,h
-	ld e,l
-	pop hl
-	call CopyData
-	pop de
-	pop hl
-	pop af
-	ld [H_LOADEDROMBANK],a
-	ld [MBC1RomBank],a
-	ret
-
 FarCopyDataDouble::
 ; Expand bc bytes of 1bpp image data
 ; from a:hl to 2bpp data at de.
-	ld [hROMBankTemp],a
+	ld [wFarCopyDataSavedROMBank],a
 	ld a,[H_LOADEDROMBANK]
 	push af
-	ld a,[hROMBankTemp]
-	ld [H_LOADEDROMBANK],a
-	ld [MBC1RomBank],a
-.loop
-	ld a,[hli]
-	ld [de],a
+	ld a,[wFarCopyDataSavedROMBank]
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	ld a,h ; swap hl and de
+	ld h,d
+	ld d,a
+	ld a,l
+	ld l,e
+	ld e,a
+	
+	inc b
+	inc c
+	jr .handleLoop
+.expandloop
+	ld a,[de]
 	inc de
-	ld [de],a
-	inc de
-	dec bc
-	ld a,c
-	or b
-	jr nz,.loop
+	ld [hli],a
+	ld [hli],a
+.handleLoop
+	dec c
+	jr nz, .expandloop
+	dec b
+	jr nz, .expandloop
 	pop af
-	ld [H_LOADEDROMBANK],a
-	ld [MBC1RomBank],a
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
 	ret
 
 CopyVideoData::
@@ -70,7 +43,7 @@ CopyVideoData::
 	ld [H_AUTOBGTRANSFERENABLED], a
 
 	ld a, [H_LOADEDROMBANK]
-	ld [hROMBankTemp], a
+	push af
 
 	ld a, b
 	ld [H_LOADEDROMBANK], a
@@ -94,7 +67,7 @@ CopyVideoData::
 .done
 	ld [H_VBCOPYSIZE], a
 	call DelayFrame
-	ld a, [hROMBankTemp]
+	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 	pop af
@@ -119,7 +92,7 @@ CopyVideoDataDouble::
 	xor a ; disable auto-transfer while copying
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ld a, [H_LOADEDROMBANK]
-	ld [hROMBankTemp], a
+	push af
 
 	ld a, b
 	ld [H_LOADEDROMBANK], a
@@ -143,7 +116,7 @@ CopyVideoDataDouble::
 .done
 	ld [H_VBCOPYDOUBLESIZE], a
 	call DelayFrame
-	ld a, [hROMBankTemp]
+	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 	pop af

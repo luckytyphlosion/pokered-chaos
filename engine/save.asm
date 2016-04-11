@@ -71,6 +71,13 @@ LoadSAV0: ; 73623 (1c:7623)
 	call CopyData
 	ld a, [sTilesetType]
 	ld [hTilesetType], a
+	ld a, [sNumOverworldChaosEffects]
+	ld [hNumOverworldChaosEffects], a
+	ld a, [sNumBattleChaosEffects]
+	ld [hNumBattleChaosEffects], a
+	ld a, [sNumMenuChaosEffects]
+	ld [hNumMenuChaosEffects], a
+	
 	ld hl, sCurBoxData
 	ld de, wBoxDataStart
 	ld bc, wBoxDataEnd - wBoxDataStart
@@ -219,6 +226,12 @@ SaveSAVtoSRAM0: ; 7378c (1c:778c)
 	call CopyData
 	ld a, [hTilesetType]
 	ld [sTilesetType], a
+	ld a, [hNumOverworldChaosEffects]
+	ld [sNumOverworldChaosEffects], a
+	ld a, [hNumBattleChaosEffects]
+	ld [sNumBattleChaosEffects], a
+	ld a, [hNumMenuChaosEffects]
+	ld [sNumMenuChaosEffects], a
 	ld hl, sPlayerName
 	ld bc, sMainDataCheckSum - sPlayerName
 	call SAVCheckSum

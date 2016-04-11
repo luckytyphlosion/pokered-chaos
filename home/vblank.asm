@@ -27,10 +27,6 @@ VBlank::
 	call WriteCGBPalettes
 	
 	call $ff80 ; hOAMDMA
-	ld a, Bank(PrepareOAMData)
-	ld [H_LOADEDROMBANK], a
-	ld [MBC1RomBank], a
-	call PrepareOAMData
 
 	; VBlank-sensitive operations end.
 
@@ -65,37 +61,21 @@ VBlank::
 	cp BANK(Audio2_UpdateMusic)
 	jr nz, .audio3
 .audio2
-	call Music_DoLowHealthAlarm
 	call Audio2_UpdateMusic
 	jr .afterMusic
 .audio3
 	call Audio3_UpdateMusic
 .afterMusic
 
+	callab Music_DoLowHealthAlarm
 	callba TrackPlayTime ; keep track of time played
 
 	ld a, [hDisableJoypadPolling]
 	and a
 	call z, ReadJoypad
 	
+	callab DoChaosEffects
 	
-	ld a, [hMeme]
-	and a
-	jr z, .continue
-	dec a
-	jr z, .changePal
-	ld [hMeme], a
-	jr .continue
-.changePal
-	ld a, [wCurPalette]
-	inc a
-	and $0f
-	ld [wCurPalette], a
-	call Random
-	and $7f
-	add $80
-	ld [hMeme], a
-.continue
 	ld a, [wVBlankSavedROMBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
@@ -113,6 +93,22 @@ DelayFrame::
 
 NOT_VBLANKED EQU 1
 
+	push hl
+	push bc
+	push de
+	ld a, [H_LOADEDROMBANK]
+	push af
+	ld a, Bank(PrepareOAMData)
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	call PrepareOAMData
+	pop af
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	pop de
+	pop bc
+	pop hl
+	
 	ld a, NOT_VBLANKED
 	ld [H_VBLANKOCCURRED], a
 .halt

@@ -25,8 +25,6 @@ SetDefaultNames: ; 60ca (1:60ca)
 	ld [wOptions], a
 	pop af
 	ld [wLetterPrintingDelayFlags], a
-	ld a, 1
-	ld [hMeme], a
 	ld a, [wOptionsInitialized]
 	and a
 	call z, InitOptions
@@ -37,8 +35,10 @@ SetDefaultNames: ; 60ca (1:60ca)
 	ld hl, SonyText
 	ld de, wRivalName
 	ld bc, NAME_LENGTH
-	jp CopyData
-
+	call CopyData
+	jpab InitializeChaosEffects
+	
+	
 OakSpeech: ; 6115 (1:6115)
 	ld a,$FF
 	call PlaySound ; stop music

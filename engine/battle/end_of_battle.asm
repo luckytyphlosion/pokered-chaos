@@ -48,6 +48,7 @@ EndOfBattle: ; 137aa (4:77aa)
 	ld [wLowHealthAlarm], a ;disable low health alarm
 	ld [wChannelSoundIDs + CH4], a
 	ld [wIsInBattle], a
+	ld [hTrueIsInBattle], a
 	ld [wBattleType], a
 	ld [wMoveMissed], a
 	ld [wCurOpponent], a

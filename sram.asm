@@ -18,6 +18,9 @@ sSpriteData::  ds wSpriteDataEnd - wSpriteDataStart ; ad2c
 sPartyData::   ds wPartyDataEnd  - wPartyDataStart ; af2c
 sCurBoxData::  ds wBoxDataEnd    - wBoxDataStart ; b0c0
 sTilesetType:: ds 1 ; b522
+sNumOverworldChaosEffects:: ds 1
+sNumBattleChaosEffects:: ds 1
+sNumMenuChaosEffects:: ds 1
 sMainDataCheckSum:: ds 1 ; b523
 
 

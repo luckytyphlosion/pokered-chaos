@@ -2988,16 +2988,16 @@ Bankswitch:: ; 35d6 (0:35d6)
 	ld a,b
 	ld [H_LOADEDROMBANK],a
 	ld [MBC1RomBank],a
-	ld bc,.Return
-	push bc
-	jp [hl]
-.Return
+	call JumpToAddress
 	pop bc
 	ld a,b
 	ld [H_LOADEDROMBANK],a
 	ld [MBC1RomBank],a
 	ret
 
+JumpToAddress:
+	jp hl
+	
 ; displays yes/no choice
 ; yes -> set carry
 YesNoChoice:: ; 35ec (0:35ec)
@@ -3104,8 +3104,10 @@ DivideBytes:: ; 366b (0:366b)
 	pop hl
 	ret
 
-
 LoadFontTilePatterns::
+	ld a, [wFlags_D733]
+	bit 5, a
+	jr nz, .invisibleText
 	ld a, [rLCDC]
 	bit 7, a ; is the LCD enabled?
 	jr nz, .on
@@ -3120,7 +3122,22 @@ LoadFontTilePatterns::
 	ld hl, vFont
 	lb bc, BANK(FontGraphics), (FontGraphicsEnd - FontGraphics) / $8
 	jp CopyVideoDataDouble ; if LCD is on, transfer during V-blank
-
+.invisibleText
+	ld a, [rLCDC]
+	bit 7, a
+	jr nz, .on2
+.off2
+	ld hl, InvisibleText
+	ld de, vFont
+	ld bc, InvisibleTextEnd - InvisibleText
+	ld a, BANK(InvisibleText)
+	jp FarCopyDataDouble
+.on2
+	ld de, InvisibleText
+	ld hl, vFont
+	lb bc, BANK(InvisibleText), (InvisibleTextEnd - InvisibleText) / $8
+	jp CopyVideoDataDouble
+	
 LoadTextBoxTilePatterns::
 	ld a, [rLCDC]
 	bit 7, a ; is the LCD enabled?
@@ -3233,11 +3250,11 @@ PlaySoundWaitForCurrent:: ; 3740 (0:3740)
 
 ; Wait for sound to finish playing
 WaitForSoundToFinish:: ; 3748 (0:3748)
+.waitLoop
 	ld a, [wLowHealthAlarm]
 	and $80
 	ret nz
 	push hl
-.waitLoop
 	ld hl, wChannelSoundIDs + CH4
 	xor a
 	or [hl]
@@ -3246,8 +3263,8 @@ WaitForSoundToFinish:: ; 3748 (0:3748)
 	inc hl
 	inc hl
 	or [hl]
-	jr nz, .waitLoop
 	pop hl
+	jr nz, .waitLoop
 	ret
 
 NamePointers:: ; 375d (0:375d)
@@ -4393,20 +4410,7 @@ GivePokemon::
 	jpba _GivePokemon
 
 
-Random::
-; Return a random number in a.
-; For battles, use BattleRandom.
-	push hl
-	push de
-	push bc
-	callba Random_
-	ld a, [hRandomAdd]
-	pop bc
-	pop de
-	pop hl
-	ret
-
-
+INCLUDE "home/random.asm"
 INCLUDE "home/predef.asm"
 
 

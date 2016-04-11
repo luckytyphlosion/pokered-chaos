@@ -1,26 +1,35 @@
+dbl: MACRO
+	db \1 << 8, \1 & $ff
+ENDM
+
 DoChaosEffects:
 	ld a, [wd732]
 	bit 0, a
 	ret z
 	call CheckChaosEffectType
+	call GetChaosEffectListPointer
+	ld d, h
+	ld e, l
 	ld a, [wPlayTimeFrames]
 	and a
-	jr nz, .loop
+	jr nz, .runEffects
 	ld a, [wPlayTimeSeconds]
 	and a ; 0 seconds
 	jr z, .replaceChaosEffect
 	cp 30
-	jr nz, .loop
+	jr nz, .runEffects
 .replaceChaosEffect
 	call ReplaceChaosEffect
 	ld a, [hRandomAdd]
 	and a
-	jr nz, .loop
+	jr nz, .runEffects
 	push hl
 	push de
 	call CE_AddNewChaosEffect
 	pop de
 	pop hl
+.runEffects
+	call GetChaosJumptable
 .loop
 	ld a, [de]
 	ld b, a
@@ -77,24 +86,44 @@ ReplaceChaosEffect:
 CheckChaosEffectType:
 	ld a, [hTrueIsInBattle]
 	and a
-	ld hl, ChaosEffectOverworldJumptable
-	ld de, wOverworldChaosEffects
 	ld a, $0
 	jr z, .gotEffect
 	
 	ld a, [hWY]
 	and a
-	ld hl, ChaosEffectBattleJumptable
-	ld de, wBattleChaosEffects
 	ld a, $1
 	jr z, .gotEffect
 	
-	ld hl, ChaosEffectMenuJumptable
-	ld de, wMenuChaosEffects
 	ld a, $2
 .gotEffect
 	ld [hChaosEffectType], a
 	ret
+	
+GetChaosJumptable:
+	ld a, [hChaosEffectType]
+	ld hl, ChaosJumptables
+	ld c, a
+	ld b, 0
+	add hl, bc
+	add hl, bc
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ret
+	
+ChaosJumptables:
+	dw ChaosEffectOverworldJumptable
+	dw ChaosEffectBattleJumptable
+	dw ChaosEffectMenuJumptable
+	
+; jumptables
+INCLUDE "engine/chaos/battle_list.asm"
+INCLUDE "engine/chaos/menu_list.asm"
+INCLUDE "engine/chaos/overworld_list.asm"
+
+NUM_OVERWORLD_CHAOS_EFFECTS EQU (ChaosEffectOverworldJumptableEnd - ChaosEffectOverworldJumptable) / 2 - 1
+NUM_BATTLE_CHAOS_EFFECTS EQU (ChaosEffectBattleJumptableEnd - ChaosEffectBattleJumptable) / 2 - 1
+NUM_MENU_CHAOS_EFFECTS EQU (ChaosEffectMenuJumptableEnd - ChaosEffectMenuJumptable) / 2 - 1
 
 GetChaosEffectTypeAndNumberOfChaosEffects:
 	ld a, [hChaosEffectType]
@@ -105,40 +134,11 @@ GetChaosEffectTypeAndNumberOfChaosEffects:
 	ld a, [$ff00+c]
 	ld c, a
 	ret
-	
-ChaosEffectOverworldJumptable:
-	dw CE_InstantText
-	dw CE_InvisibleText
-	dw CE_Redbar
-	dw CE_RandomMonPoison
-	
-ChaosEffectOverworldJumptableEnd:
 
-ChaosEffectBattleJumptable:
-	dw CE_InstantText
-	dw CE_InvisibleText
-	dw CE_Redbar
-	dw CE_wcf4b
-	
-ChaosEffectBattleJumptableEnd:
-
-ChaosEffectMenuJumptable:
-	dw CE_InstantText
-	dw CE_InvisibleText
-	dw CE_Redbar
-	dw CE_wcf4b
-	
-ChaosEffectMenuJumptableEnd:
-	
-NUM_OVERWORLD_CHAOS_EFFECTS EQU (ChaosEffectOverworldJumptableEnd - ChaosEffectOverworldJumptable) / 2 - 1
-NUM_BATTLE_CHAOS_EFFECTS EQU (ChaosEffectBattleJumptableEnd - ChaosEffectBattleJumptable) / 2 - 1
-NUM_MENU_CHAOS_EFFECTS EQU (ChaosEffectMenuJumptableEnd - ChaosEffectMenuJumptable) / 2 - 1
-
-dbl: MACRO
-	db \1 << 8, \1 & $ff
-ENDM
 
 CE_AddNewChaosEffect:
+; get effect type, check that there aren't already 31 effects.
+; if 31, don't add any more. else increment
 	ld a, [hChaosEffectType]
 	ld b, a
 	ld c, hNumOverworldChaosEffects & $ff
@@ -149,22 +149,15 @@ CE_AddNewChaosEffect:
 	ret nc
 	inc a
 	ld [$ff00+c], a
-	
-	ld c, b
-	ld b, $0
-	ld hl, ChaosEffectPointers
-	add hl, bc
-	add hl, bc
-	
+; setup c = (numEffects-1)*2 for getting the slot location later
 	dec a
 	add a
 	ld c, a
+; get a pointer to the START of this chaos effect list in WRAM
+	ld a, b
+	call GetChaosEffectListPointer
+; get the location of the slot we're inserting into
 	ld b, $0
-	
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	
 	add hl, bc
 CE_WriteChaosEffect:
 	ld a, [hChaosEffectType]
@@ -182,11 +175,6 @@ CE_WriteChaosEffect:
 	ld [hli], a
 	ld [hl], e
 	ret
-	
-ChaosEffectPointers:
-	dw wOverworldChaosEffects
-	dw wBattleChaosEffects
-	dw wMenuChaosEffects
 	
 InitializeChaosEffects:
 	ld c, 3
@@ -277,75 +265,9 @@ CheckIfNextFrameWillReplaceChaosEffect:
 	ret z
 	cp 59
 	ret
-	
-CE_InstantText:
-	call CheckIfFirstRunthrough
-	jr nz, .notFirstRun
-	ld a, [wOptions]
-	ld [wSavedOptions], a
-	and $f0
-	ld [wOptions], a
-	ret
-.notFirstRun
-	call CheckIfNextFrameWillReplaceChaosEffect
-	ret nz
-	ld a, [wSavedOptions]
-	ld [wOptions], a
-	ret
-	
-CE_InvisibleText:
-	call CheckIfNextFrameWillReplaceChaosEffect
-	ld hl, wFlags_D733
-	jr z, .resetFlag
-	set 5, [hl]
-	ret
-.resetFlag
-	res 5, [hl]
-	ret
-	
-CE_Redbar:
-	ld hl, wLowHealthAlarm
-	set 7, [hl]
-	ret
-	
-CE_wcf4b::
-	call Random
-	and $f
-	ld c, a
-	ld b, $0
-	ld hl, wcf4b
-	add hl, bc
-	ld a, [hl]
-	ld a, [hRandomSub]
-	ld [hli], a
-	ld [hl], "@"
-	ret
-	
-CE_RandomMonPoison:
-	call CheckIfFirstRunthrough
-	ret nz
-	ld a, [wPartyCount]
-	and a
-	ret z
-	ld d, a
-	ld e, a
-	ld hl, wPartyMon1Status
-	ld bc, wPartyMon2 - wPartyMon1
-.checkAllPoisonedLoop
-	bit PSN, [hl]
-	jr z, .setPoisonLoop
-	dec e
-	jr nz, .checkAllPoisonedLoop
-	ret
-.setPoisonLoop
-	call Random
-	and $7
-	cp d
-	jr nc, .setPoisonLoop
-	ld hl, wPartyMon1Status
-	call AddNTimes
-	bit PSN, [hl]
-	jr nz, .setPoisonLoop
-	set PSN, [hl]
-	ret
-	
+
+; trolls code
+INCLUDE "engine/chaos/battle.asm"
+INCLUDE "engine/chaos/menu.asm"
+INCLUDE "engine/chaos/overworld.asm"
+INCLUDE "engine/chaos/universal.asm"

@@ -157,6 +157,13 @@ Audio1_PlayNextNote: ; 0x91d0
 	add hl, bc
 	res BIT_PITCH_BEND_ON, [hl]
 	res BIT_PITCH_BEND_DECREASING, [hl]
+	ld a, c
+	cp CH4
+	jr nz, .beginChecks
+	ld a, [wLowHealthAlarm] ;low health alarm enabled?
+	bit 7, a
+	ret nz
+.beginChecks
 	call Audio1_endchannel
 	ret
 

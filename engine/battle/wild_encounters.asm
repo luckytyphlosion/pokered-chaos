@@ -75,7 +75,15 @@ TryDoWildEncounter: ; 13870 (4:7870)
 	add hl, bc
 	ld a, [hli]
 	ld [wCurEnemyLVL], a
+	push de
+	ld c, CHAOS_TYPE_OVERWORLD
+	ld de, CHAOS_OVERWORLD_ALL_ENCOUNTERS_JYNX
+	call IsChaosEffectActive
+	pop de
 	ld a, [hl]
+	jr nc, .writeEncounter
+	ld a, JYNX
+.writeEncounter
 	ld [wcf91], a
 	ld [wEnemyMonSpecies2], a
 	ld a, [wRepelRemainingSteps]

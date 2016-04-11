@@ -7,6 +7,7 @@ DoChaosEffects:
 	bit 0, a
 	ret z
 	call CheckChaosEffectType
+	call GetChaosEffectListPointer
 	ld d, h
 	ld e, l
 	ld a, [wPlayTimeFrames]
@@ -82,6 +83,22 @@ ReplaceChaosEffect:
 	pop hl
 	ret
 	
+CheckChaosEffectType:
+	ld a, [hTrueIsInBattle]
+	and a
+	ld a, $0
+	jr z, .gotEffect
+	
+	ld a, [hWY]
+	and a
+	ld a, $1
+	jr z, .gotEffect
+	
+	ld a, $2
+.gotEffect
+	ld [hChaosEffectType], a
+	ret
+	
 GetChaosJumptable:
 	ld a, [hChaosEffectType]
 	ld hl, ChaosJumptables
@@ -120,6 +137,8 @@ GetChaosEffectTypeAndNumberOfChaosEffects:
 
 
 CE_AddNewChaosEffect:
+; get effect type, check that there aren't already 31 effects.
+; if 31, don't add any more. else increment
 	ld a, [hChaosEffectType]
 	ld b, a
 	ld c, hNumOverworldChaosEffects & $ff
@@ -130,22 +149,15 @@ CE_AddNewChaosEffect:
 	ret nc
 	inc a
 	ld [$ff00+c], a
-	
-	ld c, b
-	ld b, $0
-	ld hl, ChaosEffectPointers
-	add hl, bc
-	add hl, bc
-	
+; setup c = (numEffects-1)*2 for getting the slot location later
 	dec a
 	add a
 	ld c, a
+; get a pointer to the START of this chaos effect list in WRAM
+	ld a, b
+	call GetChaosEffectListPointer
+; get the location of the slot we're inserting into
 	ld b, $0
-	
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	
 	add hl, bc
 CE_WriteChaosEffect:
 	ld a, [hChaosEffectType]
@@ -163,11 +175,6 @@ CE_WriteChaosEffect:
 	ld [hli], a
 	ld [hl], e
 	ret
-	
-ChaosEffectPointers:
-	dw wOverworldChaosEffects
-	dw wBattleChaosEffects
-	dw wMenuChaosEffects
 	
 InitializeChaosEffects:
 	ld c, 3

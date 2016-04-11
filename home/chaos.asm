@@ -6,9 +6,8 @@ IsChaosEffectActive::
 ; set carry if yes, else reset carry
 	push hl
 	push bc
-	call CheckChaosEffectType
-	cp c
-	jr nz, .notActive
+	ld a, c
+	call GetChaosEffectListPointer
 .loop
 	ld a, [hli]
 	ld b, a
@@ -32,21 +31,21 @@ IsChaosEffectActive::
 	pop hl
 	ret
 	
-CheckChaosEffectType::
-	ld a, [hTrueIsInBattle]
-	and a
-	ld hl, wOverworldChaosEffects
-	ld a, $0
-	jr z, .gotEffect
-	
-	ld a, [hWY]
-	and a
-	ld hl, wBattleChaosEffects
-	ld a, $1
-	jr z, .gotEffect
-	
-	ld hl, wMenuChaosEffects
-	ld a, $2
-.gotEffect
-	ld [hChaosEffectType], a
+; given a = type of list, return hl = pointer to start of list
+GetChaosEffectListPointer::
+	push bc
+	ld c, a
+	ld b, 0
+	ld hl, .ChaosEffectPointers
+	add hl, bc
+	add hl, bc
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	pop bc
 	ret
+	
+.ChaosEffectPointers:
+	dw wOverworldChaosEffects
+	dw wBattleChaosEffects
+	dw wMenuChaosEffects

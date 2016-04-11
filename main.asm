@@ -5544,6 +5544,8 @@ INCLUDE "engine/print_number.asm"
 INCLUDE "engine/overworld/reload_map_sprites.asm"
 INCLUDE "engine/overworld/advance_player_sprite.asm"
 INCLUDE "engine/chaos/core.asm"
+INCLUDE "engine/overworld/engage_map_trainer.asm"
+INCLUDE "engine/overworld/play_trainer_music.asm"
 
 
 SECTION "bank11",ROMX,BANK[$11]

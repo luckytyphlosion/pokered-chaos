@@ -322,6 +322,16 @@ LoadFrontSpriteByMonIndex:: ; 1389 (0:1389)
 
 PlayCry:: ; 13d0 (0:13d0)
 ; Play monster a's cry.
+	push de
+	ld b, a
+	ld c, CHAOS_TYPE_BATTLE
+	ld de, CHAOS_BATTLE_ALL_CRIES_JYNX
+	call IsChaosEffectActive
+	pop de
+	ld a, b
+	jr nc, .play
+	ld a, JYNX
+.play
 	call GetCryData
 	call PlaySound
 	jp WaitForSoundToFinish
@@ -2521,18 +2531,7 @@ SaveEndBattleTextPointers:: ; 3354 (0:3354)
 ; loads data of some trainer on the current map and plays pre-battle music
 ; [wSpriteIndex]: sprite ID of trainer who is engaged
 EngageMapTrainer:: ; 336a (0:336a)
-	ld hl, wMapSpriteExtraData
-	ld d, $0
-	ld a, [wSpriteIndex]
-	dec a
-	add a
-	ld e, a
-	add hl, de     ; seek to engaged trainer data
-	ld a, [hli]    ; load trainer class
-	ld [wEngagedTrainerClass], a
-	ld a, [hl]     ; load trainer mon set
-	ld [wEnemyMonAttackMod], a
-	jp PlayTrainerMusic
+	jpab _EngageMapTrainer
 
 PrintEndBattleText:: ; 3381 (0:3381)
 	push hl
@@ -2593,51 +2592,7 @@ CheckIfAlreadyEngaged:: ; 33dd (0:33dd)
 	ret
 
 PlayTrainerMusic:: ; 33e8 (0:33e8)
-	ld a, [wEngagedTrainerClass]
-	cp OPP_SONY1
-	ret z
-	cp OPP_SONY2
-	ret z
-	cp OPP_SONY3
-	ret z
-	ld a, [wGymLeaderNo]
-	and a
-	ret nz
-	xor a
-	ld [wAudioFadeOutControl], a
-	ld a, $ff
-	call PlaySound
-	ld a, BANK(Music_MeetEvilTrainer)
-	ld [wAudioROMBank], a
-	ld [wAudioSavedROMBank], a
-	ld a, [wEngagedTrainerClass]
-	ld b, a
-	ld hl, EvilTrainerList
-.evilTrainerListLoop
-	ld a, [hli]
-	cp $ff
-	jr z, .noEvilTrainer
-	cp b
-	jr nz, .evilTrainerListLoop
-	ld a, MUSIC_MEET_EVIL_TRAINER
-	jr .PlaySound
-.noEvilTrainer
-	ld hl, FemaleTrainerList
-.femaleTrainerListLoop
-	ld a, [hli]
-	cp $ff
-	jr z, .maleTrainer
-	cp b
-	jr nz, .femaleTrainerListLoop
-	ld a, MUSIC_MEET_FEMALE_TRAINER
-	jr .PlaySound
-.maleTrainer
-	ld a, MUSIC_MEET_MALE_TRAINER
-.PlaySound
-	ld [wNewSoundID], a
-	jp PlaySound
-
-INCLUDE "data/trainer_types.asm"
+	jpab _PlayTrainerMusic
 
 ; checks if the player's coordinates match an arrow movement tile's coordinates
 ; and if so, decodes the RLE movement data
@@ -4233,15 +4188,7 @@ PrintNumber:: ; 3c5f
 	ld a, [de]
 	ld [H_NUMTOPRINT + 2], a
 .start
-    ld a, [H_LOADEDROMBANK]
-    push af
-	ld a, Bank(_PrintNumber)
-	ld [H_LOADEDROMBANK], a
-	ld [MBC1RomBank], a
-	call _PrintNumber
-	pop af
-	ld [H_LOADEDROMBANK], a
-	ld [MBC1RomBank], a
+	homecall _PrintNumber
 	ret
 
 

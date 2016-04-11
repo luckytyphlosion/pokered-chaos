@@ -25,6 +25,7 @@ CHAOS_TYPE_MENU EQU 2
 	chaos_battle_const INVISIBLE_TEXT
 	chaos_battle_const REDBAR
 	chaos_battle_const CF4B_CORRUPTION
+	chaos_battle_const ALL_CRIES_JYNX
 	
 	chaos_menu_const INSTANT_TEXT
 	chaos_menu_const INVISIBLE_TEXT

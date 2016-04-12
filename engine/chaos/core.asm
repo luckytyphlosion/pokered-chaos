@@ -59,6 +59,28 @@ DoChaosEffects:
 	jr .loop
 	
 ReplaceChaosEffect:
+	ld a, [hChaosEffectType]
+	push af
+	push de
+	push hl
+	xor a
+.loop
+	ld [hChaosEffectType], a
+	call GetChaosEffectListPointer
+	ld d, h
+	ld e, l
+	call _ReplaceChaosEffect
+	ld a, [hChaosEffectType]
+	inc a
+	cp 3
+	jr nz, .loop
+	pop hl
+	pop de
+	pop af
+	ld [hChaosEffectType], a
+	ret
+
+_ReplaceChaosEffect:	
 	push hl
 	push de
 	call GetChaosEffectTypeAndNumberOfChaosEffects
@@ -254,6 +276,10 @@ CheckIfFirstRunthrough:
 	ld a, b
 	or c
 	ret z
+	ld a, c
+	and a
+	ret nz
+	ld a, b
 	cp 30
 	ret
 	

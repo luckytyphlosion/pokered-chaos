@@ -6167,7 +6167,7 @@ CheckEnemyStatusConditions: ; 3e88f (f:688f)
 GetCurrentMove: ; 3eabe (f:6abe)
 	ld a, [H_WHOSETURN]
 	and a
-	jp z, .player
+	jr z, .player
 	ld de, wEnemyMoveNum
 	ld a, [wEnemySelectedMove]
 	jr .selected
@@ -6186,7 +6186,9 @@ GetCurrentMove: ; 3eabe (f:6abe)
 	call AddNTimes
 	ld a, BANK(Moves)
 	call FarCopyData
-
+	
+	call CorruptCurrentMoveData
+	
 	ld a, BANK(MoveNames)
 	ld [wPredefBank], a
 	ld a, MOVE_NAME
@@ -6194,6 +6196,39 @@ GetCurrentMove: ; 3eabe (f:6abe)
 	call GetName
 	ld de, wcd6d
 	jp CopyStringToCF4B
+
+CorruptCurrentMoveData:
+	ld a, [H_WHOSETURN]
+	and a
+	jr z, .player
+; test if enemy turn
+	ld a, [wGetCurrentMoveCorruptionFlagsEnemy]
+	and %111111
+	ld b, a
+	ret z
+	ld hl, wEnemyMoveNum
+	ld de, wCurMoveCorruptionValuesEnemy
+	jr .gotMoveAddress
+.player
+	ld a, [wGetCurrentMoveCorruptionFlagsPlayer]
+	and %111111
+	ld b, a
+	ret z
+	ld hl, wPlayerMoveNum
+	ld de, wCurMoveCorruptionValuesPlayer
+.gotMoveAddress
+	ld c, $6
+.loop
+	srl b
+	jr nc, .doNotRandomizeData
+	ld a, [de]
+	ld [hl], a
+.doNotRandomizeData
+	inc de
+	inc hl
+	dec c
+	jr nz, .loop
+	ret	
 
 LoadEnemyMonData: ; 3eb01 (f:6b01)
 	ld a, [wLinkState]
@@ -7121,6 +7156,7 @@ LoadMonBackPic: ; 3f103 (f:7103)
 JumpMoveEffect: ; 3f132 (f:7132)
 	call _JumpMoveEffect
 	ld b, $1
+MoveEffectDummy:
 	ret
 
 _JumpMoveEffect: ; 3f138 (f:7138)
@@ -7131,6 +7167,8 @@ _JumpMoveEffect: ; 3f138 (f:7138)
 	ld a, [wEnemyMoveEffect]
 .next1
 	dec a ; subtract 1, there is no special effect for 00
+	cp $57
+	ret nc
 	add a ; x2, 16bit pointers
 	ld hl, MoveEffectPointerTable
 	ld b, 0
@@ -7150,7 +7188,7 @@ MoveEffectPointerTable: ; 3f150 (f:7150)
 	 dw FreezeBurnParalyzeEffect  ; PARALYZE_SIDE_EFFECT1
 	 dw ExplodeEffect             ; EXPLODE_EFFECT
 	 dw DrainHPEffect             ; DREAM_EATER_EFFECT
-	 dw $0000                     ; MIRROR_MOVE_EFFECT
+	 dw MoveEffectDummy           ; MIRROR_MOVE_EFFECT
 	 dw StatModifierUpEffect      ; ATTACK_UP1_EFFECT
 	 dw StatModifierUpEffect      ; DEFENSE_UP1_EFFECT
 	 dw StatModifierUpEffect      ; SPEED_UP1_EFFECT
@@ -7158,7 +7196,7 @@ MoveEffectPointerTable: ; 3f150 (f:7150)
 	 dw StatModifierUpEffect      ; ACCURACY_UP1_EFFECT
 	 dw StatModifierUpEffect      ; EVASION_UP1_EFFECT
 	 dw PayDayEffect              ; PAY_DAY_EFFECT
-	 dw $0000                     ; SWIFT_EFFECT
+	 dw MoveEffectDummy           ; SWIFT_EFFECT
 	 dw StatModifierDownEffect    ; ATTACK_DOWN1_EFFECT
 	 dw StatModifierDownEffect    ; DEFENSE_DOWN1_EFFECT
 	 dw StatModifierDownEffect    ; SPEED_DOWN1_EFFECT
@@ -7172,21 +7210,21 @@ MoveEffectPointerTable: ; 3f150 (f:7150)
 	 dw SwitchAndTeleportEffect   ; SWITCH_AND_TELEPORT_EFFECT
 	 dw TwoToFiveAttacksEffect    ; TWO_TO_FIVE_ATTACKS_EFFECT
 	 dw TwoToFiveAttacksEffect    ; unused effect
-	 dw FlinchSideEffect           ; FLINCH_SIDE_EFFECT1
+	 dw FlinchSideEffect          ; FLINCH_SIDE_EFFECT1
 	 dw SleepEffect               ; SLEEP_EFFECT
 	 dw PoisonEffect              ; POISON_SIDE_EFFECT2
 	 dw FreezeBurnParalyzeEffect  ; BURN_SIDE_EFFECT2
 	 dw FreezeBurnParalyzeEffect  ; unused effect
 	 dw FreezeBurnParalyzeEffect  ; PARALYZE_SIDE_EFFECT2
-	 dw FlinchSideEffect           ; FLINCH_SIDE_EFFECT2
+	 dw FlinchSideEffect          ; FLINCH_SIDE_EFFECT2
 	 dw OneHitKOEffect            ; OHKO_EFFECT
 	 dw ChargeEffect              ; CHARGE_EFFECT
-	 dw $0000                     ; SUPER_FANG_EFFECT
-	 dw $0000                     ; SPECIAL_DAMAGE_EFFECT
+	 dw MoveEffectDummy           ; SUPER_FANG_EFFECT
+	 dw MoveEffectDummy           ; SPECIAL_DAMAGE_EFFECT
 	 dw TrappingEffect            ; TRAPPING_EFFECT
 	 dw ChargeEffect              ; FLY_EFFECT
 	 dw TwoToFiveAttacksEffect    ; ATTACK_TWICE_EFFECT
-	 dw $0000                     ; JUMP_KICK_EFFECT
+	 dw MoveEffectDummy           ; JUMP_KICK_EFFECT
 	 dw MistEffect                ; MIST_EFFECT
 	 dw FocusEnergyEffect         ; FOCUS_ENERGY_EFFECT
 	 dw RecoilEffect              ; RECOIL_EFFECT
@@ -7213,18 +7251,18 @@ MoveEffectPointerTable: ; 3f150 (f:7150)
 	 dw StatModifierDownEffect    ; DEFENSE_DOWN_SIDE_EFFECT
 	 dw StatModifierDownEffect    ; SPEED_DOWN_SIDE_EFFECT
 	 dw StatModifierDownEffect    ; SPECIAL_DOWN_SIDE_EFFECT
-	 dw StatModifierDownEffect    ; unused effect
-	 dw StatModifierDownEffect    ; unused effect
-	 dw StatModifierDownEffect    ; unused effect
-	 dw StatModifierDownEffect    ; unused effect
+	 dw MoveEffectDummy           ; unused effect
+	 dw MoveEffectDummy           ; unused effect
+	 dw MoveEffectDummy           ; unused effect
+	 dw MoveEffectDummy           ; unused effect
 	 dw ConfusionSideEffect       ; CONFUSION_SIDE_EFFECT
 	 dw TwoToFiveAttacksEffect    ; TWINEEDLE_EFFECT
-	 dw $0000                     ; unused effect
+	 dw MoveEffectDummy           ; unused effect
 	 dw SubstituteEffect          ; SUBSTITUTE_EFFECT
 	 dw HyperBeamEffect           ; HYPER_BEAM_EFFECT
 	 dw RageEffect                ; RAGE_EFFECT
 	 dw MimicEffect               ; MIMIC_EFFECT
-	 dw $0000                     ; METRONOME_EFFECT
+	 dw MoveEffectDummy           ; METRONOME_EFFECT
 	 dw LeechSeedEffect           ; LEECH_SEED_EFFECT
 	 dw SplashEffect              ; SPLASH_EFFECT
 	 dw DisableEffect             ; DISABLE_EFFECT

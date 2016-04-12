@@ -18,6 +18,9 @@ CE_InvisibleText:
 	call CheckIfNextFrameWillReplaceChaosEffect
 	ld hl, wFlags_D733
 	jr z, .resetFlag
+	call Random
+	and %111
+	jr nz, .resetFlag
 	set 5, [hl]
 	ret
 .resetFlag

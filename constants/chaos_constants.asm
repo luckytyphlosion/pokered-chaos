@@ -43,6 +43,17 @@ ce_type = CHAOS_TYPE_BATTLE
 	ce_const JOYPAD_CHAOS
 	ce_const RANDOM_PALETTES
 	ce_const INACCESSIBLE_VRAM
+	ce_const CURMOVE_NUM_E
+	ce_const CURMOVE_EFFECT_E
+	ce_const CURMOVE_PWR_E
+	ce_const CURMOVE_TYPE_E
+	ce_const CURMOVE_ACC_E
+	ce_const CURMOVE_NUM_P
+	ce_const CURMOVE_EFFECT_P
+	ce_const CURMOVE_PWR_P
+	ce_const CURMOVE_TYPE_P
+	ce_const CURMOVE_ACC_P
+	ce_const CURMOVE_MAXPP_P
 	
 ; menu
 const_value = 1

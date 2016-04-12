@@ -1496,6 +1496,7 @@ wEnemyMoveAccuracy:: ; cfd0
 	ds 1
 wEnemyMoveMaxPP:: ; cfd1
 	ds 1
+
 wPlayerMoveNum:: ; cfd2
 	ds 1
 wPlayerMoveEffect:: ; cfd3
@@ -2967,6 +2968,7 @@ wBeatGymFlags:: ; d72a
 ; used to determine whether to show name on statue and in two NPC text scripts
 	ds 1
 
+wGetCurrentMoveCorruptionFlagsEnemy::
 	ds 1
 
 wd72c:: ; d72c
@@ -2998,6 +3000,9 @@ wd72e:: ; d72e
 ; bit 7: set if scripted NPC movement has been initialised
 	ds 1
 
+wGetCurrentMoveCorruptionFlagsPlayer::
+; bits 0 - 5: which byte(s) to corrupt
+; if bits 0 - 5 = 0, do not corrupt
 	ds 1
 	
 wd730:: ; d730
@@ -3126,6 +3131,7 @@ wEnemyMonNicks:: ds NAME_LENGTH * PARTY_LENGTH ; d9ee
 wTrainerHeaderPtr:: ; da30
 	ds 2
 
+wCurMoveCorruptionValuesPlayer::
 	ds 6
 
 wOpponentAfterWrongAnswer:: ; da38
@@ -3140,7 +3146,10 @@ wCurMapScript:: ; da39
 ; mostly copied from map-specific map script pointer and wirtten back later
 	ds 1
 	
-	ds 7
+wCurMoveCorruptionValuesEnemy::
+	ds 6
+	
+	ds 1
 
 wPlayTimeHours:: ; da41
 	ds 1

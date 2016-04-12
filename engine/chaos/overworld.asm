@@ -11,6 +11,7 @@ ChaosEffectOverworldJumptable::
 ChaosEffectOverworldJumptableEnd::
 
 CE_RandomMonPoison:
+	ret
 	call CheckIfFirstRunthrough
 	ret nz
 	ld a, [wPartyCount]

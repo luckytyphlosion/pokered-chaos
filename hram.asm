@@ -267,6 +267,9 @@ hTilesetType EQU $FFD7
 
 hMovingBGTilesCounter1 EQU $FFD8
 
+hChaosEffectActiveCount EQU $FFD9
+hChaosEffectTemp EQU $FFD9
+
 H_CURRENTSPRITEOFFSET EQU $FFDA ; multiple of $10
 
 hItemCounter EQU $FFDB

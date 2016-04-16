@@ -68,14 +68,33 @@ UpdatePlayerSprite: ; 4e31 (1:4e31)
 	inc a
 	ld [hl], a
 	cp 4
-	jr nz, .calcImageIndex
+	jr nz, .calcImageIndex	
 	xor a
 	ld [hl], a
 	inc hl
+	ld a, [wSSDCorruptionValues + 4]
+	and a ; corrupt anim iteration?
+	jr z, .regularAnimIteration
+	ld a, [wSSDWhichSprite + 5]
+	and a ; handling player sprite?
+	jr z, .corruptAnimIteration
+.regularAnimIteration
 	ld a, [hl]
 	inc a
 	and $3
 	ld [hl], a
+	jr .calcImageIndex
+.corruptAnimIteration
+	ld b, [hl]
+	inc b
+	ld a, [wSSDCorruptionValues + 4]
+	add $4
+	cp b
+	jr nz, .doNotResetAnimIteration
+	sub $4
+	ld b, a
+.doNotResetAnimIteration
+	ld [hl], b
 .calcImageIndex
 	ld a, [wSpriteStateData1 + 8]
 	ld b, a
@@ -212,7 +231,7 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	add hl, de         ; move tile pointer two rows down
 	lb de, 1, 0
 	lb bc, 4, SPRITE_FACING_DOWN
-	jr TryWalking
+	jr TryWalking_CheckForCorruption
 .notDown
 	cp $80             ; $40 <= a < $80: up (or right)
 	jr nc, .notUp
@@ -224,7 +243,7 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	add hl, de         ; move tile pointer two rows up
 	lb de, -1, 0
 	lb bc, 8, SPRITE_FACING_UP
-	jr TryWalking
+	jr TryWalking_CheckForCorruption
 .notUp
 	cp $c0             ; $80 <= a < $c0: left (or up)
 	jr nc, .notLeft
@@ -236,7 +255,7 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	dec hl             ; move tile pointer two columns left
 	lb de, 0, -1
 	lb bc, 2, SPRITE_FACING_LEFT
-	jr TryWalking
+	jr TryWalking_CheckForCorruption
 .notLeft              ; $c0 <= a: right (or down)
 	ld a, [wCurSpriteMovement2]
 	cp $1
@@ -246,8 +265,35 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	inc hl             ; move tile pointer two columns right
 	lb de, 0, 1
 	lb bc, 1, SPRITE_FACING_RIGHT
-	jr TryWalking
+; fallthrough
+	
+TryWalking_CheckForCorruption:
+	push hl
+	push bc
+	ld hl, wSSDCorruptionFlags
+	bit 0, [hl]
+	jr z, .checkForXDelta
+	ld a, [wSSDWhichSprite]
+	call DoesCurrentSpriteOffsetMatchSpriteA
+	jr nz, .checkForXDelta
+	ld a, [wSSDCorruptionValues]
+	add d
+	ld d, a
+.checkForXDelta
+	bit 1, [hl]
+	jr z, AfterCheckingDeltaCorruption
+	ld a, [wSSDWhichSprite + 1]
+	call DoesCurrentSpriteOffsetMatchSpriteA
+	jr nz, AfterCheckingDeltaCorruption
+	ld a, [wSSDCorruptionValues + 1]
+	add e
+	ld e, a
 
+AfterCheckingDeltaCorruption:
+	pop bc
+	pop hl
+	jr TryWalking
+	
 ; changes facing direction by zeroing the movement delta and calling TryWalking
 ChangeFacingDirection: ; 4fc8 (1:4fc8)
 	ld de, $0
@@ -310,6 +356,26 @@ UpdateSpriteInWalkingAnimation: ; 4ffe (1:4ffe)
 	xor a
 	ld [hl], a                       ; c1x7 = 0
 	inc l
+	
+	ld a, [wSSDCorruptionValues + 4]
+	and a ; corrupt anim iteration?
+	jr z, .regularAnimIteration
+	ld a, [wSSDWhichSprite + 5]
+	call DoesCurrentSpriteOffsetMatchSpriteA
+	jr nz, .regularAnimIteration
+.corruptAnimIteration
+	ld b, [hl]
+	inc b
+	ld a, [wSSDCorruptionValues + 4]
+	add $4
+	cp b
+	jr nz, .doNotResetAnimIteration
+	sub $4
+	ld b, a
+.doNotResetAnimIteration
+	ld [hl], b
+	jr .noNextAnimationFrame
+.regularAnimIteration
 	ld a, [hl]                       ; c1x8 (walk animation frame)
 	inc a
 	and $3
@@ -397,7 +463,18 @@ notYetMoving: ; 5073 (1:5073)
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $8
 	ld l, a
+	ld a, [wSSDCorruptionValues + 4]
+	and a ; corrupt anim iteration?
+	jr z, .writeZero
+	ld c, a ; store corruption value for later
+	ld a, [wSSDWhichSprite + 5]
+	call DoesCurrentSpriteOffsetMatchSpriteA
+	jr nz, .writeZero
+	ld [hl], c
+	jr .updateSpriteImage
+.writeZero
 	ld [hl], $0             ; c1x8 = 0 (walk animation frame)
+.updateSpriteImage
 	jp UpdateSpriteImage
 
 MakeNPCFacePlayer: ; 507f (1:507f)
@@ -449,6 +526,10 @@ InitializeSpriteStatus: ; 50ad (1:50ad)
 
 ; calculates the spprite's scrren position form its map position and the player position
 InitializeSpriteScreenPosition: ; 50bd (1:50bd)
+	ld a, [wSSDCorruptionFlags]
+	and %1100 ; is there xy pixel pos corruption?
+	ret nz ; if so, do not re-adjust sprite xy
+	
 	ld h, $c2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
@@ -473,6 +554,7 @@ InitializeSpriteScreenPosition: ; 50bd (1:50bd)
 
 ; tests if sprite is off screen or otherwise unable to do anything
 CheckSpriteAvailability: ; 50dc (1:50dc)
+	
 	predef IsObjectHidden
 	ld a, [$ffe5]
 	and a
@@ -878,4 +960,12 @@ AdvanceScriptedNPCAnimFrameCounter: ; 5301 (1:5301)
 	and $3
 	ld [hl], a
 	ld [hSpriteAnimFrameCounter], a
+	ret
+
+DoesCurrentSpriteOffsetMatchSpriteA:
+; set z if matches, else set nz
+	swap a
+	ld b, a
+	ld a, [H_CURRENTSPRITEOFFSET]
+	cp b
 	ret

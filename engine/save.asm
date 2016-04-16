@@ -208,6 +208,7 @@ SaveSAVtoSRAM0: ; 7378c (1c:778c)
 	ld a, $1
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamBank], a
+	ld [wIsSaving], a
 	ld hl, wPlayerName
 	ld de, sPlayerName
 	ld bc, NAME_LENGTH
@@ -239,6 +240,7 @@ SaveSAVtoSRAM0: ; 7378c (1c:778c)
 	xor a
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamEnable], a
+	ld [wIsSaving], a
 	ret
 
 SaveSAVtoSRAM1: ; 737e2 (1c:77e2)

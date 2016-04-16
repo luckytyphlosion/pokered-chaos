@@ -34,9 +34,10 @@ CE_RandomCurMoveNumber:
 	jr z, .reset
 	call CheckIfFirstRunthrough
 	ret nz
+.randomLoop
 	call Random
 	cp NUM_ATTACKS + 1
-	jr nc, CE_RandomCurMoveNumber
+	jr nc, .randomLoop
 	inc a
 	ld [de], a
 	set 0, [hl]
@@ -92,7 +93,7 @@ CE_RandomCurMovePower:
 CE_RandomCurMoveTypeEnemy:
 	ld hl, wGetCurrentMoveCorruptionFlagsEnemy
 	ld de, wCurMoveCorruptionValuesEnemy + 3
-	jr CE_RandomCurMovePower
+	jr CE_RandomCurMoveType
 	
 CE_RandomCurMoveTypePlayer:
 	ld hl, wGetCurrentMoveCorruptionFlagsPlayer
@@ -119,7 +120,7 @@ CE_RandomCurMoveType:
 CE_RandomCurMoveAccEnemy:
 	ld hl, wGetCurrentMoveCorruptionFlagsEnemy
 	ld de, wCurMoveCorruptionValuesEnemy + 4
-	jr CE_RandomCurMovePower
+	jr CE_RandomCurMoveAcc
 	
 CE_RandomCurMoveAccPlayer:
 	ld hl, wGetCurrentMoveCorruptionFlagsPlayer

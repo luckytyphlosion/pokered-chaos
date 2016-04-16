@@ -30,6 +30,22 @@ const_value = 1
 	ce_const INACCESSIBLE_VRAM
 	ce_const JACK_MODE
 	ce_const RANDOM_ENCOUNTERS
+; Sprite State Data
+	ce_const SSD_MOVEMENT_STATUS
+	ce_const SSD_Y_DELTA
+	ce_const SSD_X_DELTA
+	ce_const SSD_PIXEL_YPOS
+	ce_const SSD_PIXEL_XPOS
+	ce_const SSD_INTRA_ANIM_FRAMECOUNTER
+	ce_const SSD_ANIM_FRAMECOUNTER
+	ce_const SSD_FACING_DIR
+	ce_const SSD_NPC_WALKCOUNTER
+	ce_const SSD_GRID_YPOS
+	ce_const SSD_GRID_XPOS
+	ce_const SSD_MOVEMENT_BYTE
+	ce_const SSD_GRASS_MASK
+	ce_const SSD_MOVEMENT_DELAY
+	ce_const SSD_SPRITE_IMAGE_BASE_OFFSET
 	
 ; battle
 const_value = 1

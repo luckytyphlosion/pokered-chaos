@@ -6179,7 +6179,8 @@ GetCurrentMove: ; 3eabe (f:6abe)
 	jr nz, .selected
 	ld a, [wPlayerSelectedMove]
 .selected
-	ld [wd0b5], a
+	push de
+	
 	dec a
 	ld hl, Moves
 	ld bc, MoveEnd - Moves
@@ -6188,6 +6189,10 @@ GetCurrentMove: ; 3eabe (f:6abe)
 	call FarCopyData
 	
 	call CorruptCurrentMoveData
+	
+	pop de
+	ld a, [de]
+	ld [wd0b5], a
 	
 	ld a, BANK(MoveNames)
 	ld [wPredefBank], a

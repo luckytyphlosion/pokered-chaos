@@ -1581,6 +1581,7 @@ wTrainerBaseMoney:: ; d046
 wMissableObjectCounter:: ; d048
 	ds 1
 
+wIsSaving::
 	ds 1
 
 wTrainerName:: ; d04a
@@ -1722,6 +1723,7 @@ wEnemyDisabledMove:: ; d072
 ; low nibble: disable turns left
 	ds 1
 
+wSSDWhichCoord::
 	ds 1
 
 wPlayerNumHits:: ; d074
@@ -2183,6 +2185,7 @@ wSavedSpriteMapY:: ; d132
 wSavedSpriteMapX:: ; d133
 	ds 1
 
+wChaosEffectRangeFlagArray::
 	ds 5
 
 wWhichPrize:: ; d139
@@ -2871,7 +2874,13 @@ wLastPalette::
 wCurPalette::
 	ds 1
 
-	ds 30
+wSSDCorruptionValues::
+	ds 14
+	
+wSSDWhichSprite::
+	ds 13
+
+	ds 3
 
 wObtainedHiddenItemsFlags::
 	ds 14
@@ -3073,6 +3082,7 @@ wWarpedFromWhichWarp:: ; d73b
 wWarpedFromWhichMap:: ; d73c
 	ds 1
 
+wSSDCorruptionFlags::
 	ds 2
 
 wCardKeyDoorY:: ; d73f

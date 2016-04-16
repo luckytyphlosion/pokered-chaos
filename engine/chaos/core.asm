@@ -6,6 +6,9 @@ DoChaosEffects:
 	ld a, [wd732]
 	bit 0, a
 	ret z
+	ld a, [wIsSaving]
+	and a
+	ret nz
 	call CheckChaosEffectType
 	call GetChaosEffectListPointer
 	ld d, h

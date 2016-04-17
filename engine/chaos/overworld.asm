@@ -178,9 +178,16 @@ CE_SSD_CanSpriteMove:
 	scf
 	ret
 	
+CE_SSD_DoesNonMovingSpriteExist:
+	ld d, $ff
+	jr CE_SSD_CanSpritesMoveCommon
+	
 CE_SSD_CanAnySpriteMove:
 ; check if any sprite on the map can move
 ; return carry if yes, else return no carry
+	ld d, $fe
+
+CE_SSD_CanSpritesMoveCommon:
 	push hl
 	push bc
 	ld hl, wSpriteStateData2 + $16
@@ -191,7 +198,7 @@ CE_SSD_CanAnySpriteMove:
 	add hl, bc
 .handleLoop
 	ld a, [hl]
-	cp $fe
+	cp d
 	jr z, .canMove
 	and a
 	jr z, .noSpritesCanMove
@@ -205,7 +212,7 @@ CE_SSD_CanAnySpriteMove:
 	pop bc
 	pop hl
 	ret
-	
+
 CE_SSD_IsSpriteInMotion:
 ; check if the sprite in a is in motion (even if moonwalking)
 	and a
@@ -629,9 +636,14 @@ CE_SSD_GridXPos:
 CE_SSD_MovementByte:
 	call CheckIfFirstRunthrough
 	jr nz, .writeValue
+	
 	ld a, [wNumSprites]
 	and a
 	ret z
+	
+	call CE_SSD_DoesNonMovingSpriteExist
+	ret nc
+	
 .randomLoop
 	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
 	call CE_SSD_CanSpriteMove

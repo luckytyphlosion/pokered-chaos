@@ -207,19 +207,6 @@ H_AUTOBGTRANSFERDEST EQU $FFBC ; 2 bytes
 ; to increase speed
 H_SPTEMP EQU $FFBF ; 2 bytes
 
-; source address for VBlankCopyBgMap function
-; the first byte doubles as the byte that enabled the transfer.
-; if it is 0, the transfer is disabled
-; if it is not 0, the transfer is enabled
-; this means that XX00 is not a valid source address
-H_VBCOPYBGSRC EQU $FFC1 ; 2 bytes
-
-; destination address for VBlankCopyBgMap function
-H_VBCOPYBGDEST EQU $FFC3 ; 2 bytes
-
-; number of rows for VBlankCopyBgMap to copy
-H_VBCOPYBGNUMROWS EQU $FFC5
-
 ; size of VBlankCopy transfer in 16-byte units
 H_VBCOPYSIZE EQU $FFC6
 

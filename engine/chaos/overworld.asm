@@ -24,6 +24,8 @@ ChaosEffectOverworldJumptable::
 	dw CE_SSD_GrassMask ; set to 80 for grassmask, continuous
 	dw CE_SSD_MovementDelay ; "any" value (lower = more chaos), continuous
 	dw CE_SSD_SpriteImageBaseOffset ; "any" value, continuous
+	dw CE_Superfast
+	dw CE_InaccessibleRowColumnRedraw
 ChaosEffectOverworldJumptableEnd::
 
 CE_RandomMonPoison:
@@ -689,8 +691,7 @@ CE_SSD_MovementDelay:
 	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
 	ld [wSSDWhichSprite + 13], a
 	ret
-	
-	
+
 CE_SSD_SpriteImageBaseOffset:
 	call CheckIfFirstRunthrough
 	jr nz, .writeOffset
@@ -718,4 +719,14 @@ CE_SSD_SpriteImageBaseOffset:
 	add hl, bc
 	ld a, [wSSDCorruptionValues + 9]
 	ld [hl], a
+	ret
+	
+CE_InaccessibleRowColumnRedraw:
+	call CheckIfNextFrameWillReplaceChaosEffect
+	ld hl, wChaosFlags1
+	jr z, .reset
+	set 1, [hl]
+	ret
+.reset
+	res 1, [hl]
 	ret

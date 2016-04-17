@@ -3182,11 +3182,18 @@ PlaySoundWaitForCurrent:: ; 3740 (0:3740)
 
 ; Wait for sound to finish playing
 WaitForSoundToFinish:: ; 3748 (0:3748)
-.waitLoop
+	push hl
+	call _WaitForSoundToFinish
+	pop hl
+	ret
+	
+_WaitForSoundToFinish:
 	ld a, [wLowHealthAlarm]
 	and $80
 	ret nz
-	push hl
+	ld a, [wd732]
+	bit 7, a
+	ret nz
 	ld hl, wChannelSoundIDs + CH4
 	xor a
 	or [hl]
@@ -3195,8 +3202,7 @@ WaitForSoundToFinish:: ; 3748 (0:3748)
 	inc hl
 	inc hl
 	or [hl]
-	pop hl
-	jr nz, .waitLoop
+	jr nz, _WaitForSoundToFinish
 	ret
 
 NamePointers:: ; 375d (0:375d)

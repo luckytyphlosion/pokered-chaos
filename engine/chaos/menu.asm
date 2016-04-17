@@ -6,4 +6,6 @@ ChaosEffectMenuJumptable::
 	dw CE_JoypadChaos
 	dw CE_RandomPalettes
 	dw CE_InaccessibleVRAM
+	dw CE_Superfast
+	dw CE_InaccessibleTilemap
 ChaosEffectMenuJumptableEnd::

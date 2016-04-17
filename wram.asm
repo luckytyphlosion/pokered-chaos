@@ -2970,6 +2970,8 @@ wd728:: ; d728
 ; bit 7: set by ItemUseCardKey, which is leftover code from a previous implementation of the Card Key
 	ds 1
 
+wChaosFlags1::
+; bit 0: inaccessible tilemap
 	ds 1
 
 wBeatGymFlags:: ; d72a
@@ -3038,6 +3040,7 @@ wd732:: ; d732
 ; bit 4: jumped into hole (Pokemon Mansion, Seafoam Islands, Victory Road) or went down waterfall (Seafoam Islands), so the target warp is a "dungeon warp"
 ; bit 5: currently being forced to ride bike (cycling road)
 ; bit 6: map destination is [wLastBlackoutMap] (usually the last used pokemon center, but could be the player's house)
+; bit 7: Superfast Red
 	ds 1
 
 wFlags_D733:: ; d733

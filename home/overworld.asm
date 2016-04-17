@@ -1576,6 +1576,9 @@ JoypadOverworld:: ; 0f4d (0:0f4d)
 	ld a,[hJoyHeld]
 	and a,D_DOWN | D_UP | D_LEFT | D_RIGHT | B_BUTTON | A_BUTTON
 	jr nz,.notForcedDownwards
+	ld a, [wd730]
+	bit 5, a
+	jr nz, .notForcedDownwards
 	ld a,D_DOWN
 	ld [hJoyHeld],a ; on the cycling road, if there isn't a trainer and the player isn't pressing buttons, simulate a down press
 .notForcedDownwards

@@ -19,7 +19,6 @@ VBlank::
 	ld [rWY], a
 .ok
 	call AutoBgMapTransfer
-	call VBlankCopyBgMap
 	call RedrawRowOrColumn
 	call VBlankCopy
 	call VBlankCopyDouble
@@ -28,6 +27,14 @@ VBlank::
 	
 	call $ff80 ; hOAMDMA
 
+	ld a, [wd732]
+	bit 7, a
+	jr z, .doNotPrepareOAMData
+	ld a, BANK(PrepareOAMData)
+	ld [H_LOADEDROMBANK], a
+	ld [MBC1RomBank], a
+	call PrepareOAMData
+.doNotPrepareOAMData
 	; VBlank-sensitive operations end.
 
 	call Random
@@ -78,6 +85,24 @@ VBlank::
 	
 	callab DoChaosEffects
 	
+	ld a, [wChaosFlags1]
+	bit 0, a
+	jr z, .doNotCopyTilemap
+	ld a, [H_AUTOBGTRANSFERENABLED]
+	and a
+	jr z, .doNotCopyTilemap
+	call WaitForNonVBlankPeriod
+	call InaccessibleVRAMTileMapTransfer
+.doNotCopyTilemap
+	ld a, [wChaosFlags1]
+	bit 1, a
+	jr z, .doNotCopyScreenEdge
+	ld a, [hRedrawRowOrColumnMode]
+	and a
+	jr z, .doNotCopyScreenEdge
+	call WaitForNonVBlankPeriod
+	call RedrawRowOrColumnInaccessible
+.doNotCopyScreenEdge
 	ld a, [wVBlankSavedROMBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
@@ -88,13 +113,21 @@ VBlank::
 	pop af
 	reti
 
-
+WaitForNonVBlankPeriod:
+	ld a, [rLY]
+	cp $90
+	jr nc, WaitForNonVBlankPeriod
+	ret
+	
 DelayFrame::
 ; Wait for the next vblank interrupt.
 ; As a bonus, this saves battery.
 
 NOT_VBLANKED EQU 1
 
+	ld a, [wd732]
+	bit 7, a
+	ret nz
 	push hl
 	push bc
 	push de
@@ -110,7 +143,6 @@ NOT_VBLANKED EQU 1
 	pop de
 	pop bc
 	pop hl
-	
 	ld a, NOT_VBLANKED
 	ld [H_VBLANKOCCURRED], a
 .halt

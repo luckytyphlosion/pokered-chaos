@@ -187,3 +187,23 @@ CE_InaccessibleVRAM:
 .reset
 	res 3, [hl]
 	ret
+	
+CE_Superfast:
+	call CheckIfNextFrameWillReplaceChaosEffect
+	ld hl, wd732
+	jr z, .reset
+	set 7, [hl]
+	ret
+.reset
+	res 7, [hl]
+	ret
+	
+CE_InaccessibleTilemap:
+	call CheckIfNextFrameWillReplaceChaosEffect
+	ld hl, wChaosFlags1
+	jr z, .reset
+	set 0, [hl]
+	ret
+.reset
+	res 0, [hl]
+	ret

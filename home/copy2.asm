@@ -90,7 +90,7 @@ CopyVideoData::
 
 .done
 	ld [H_VBCOPYSIZE], a
-	call DelayFrame
+	call SafeDelayFrame
 .doneInaccessibleCopy
 	pop af
 	ld [H_LOADEDROMBANK], a
@@ -102,7 +102,7 @@ CopyVideoData::
 .keepgoing
 	ld a, 8
 	ld [H_VBCOPYSIZE], a
-	call DelayFrame
+	call SafeDelayFrame
 	ld a, c
 	sub 8
 	ld c, a
@@ -146,7 +146,7 @@ CopyVideoDataDouble::
 
 .done
 	ld [H_VBCOPYDOUBLESIZE], a
-	call DelayFrame
+	call SafeDelayFrame
 .doneInaccesibleCopy
 	pop af
 	ld [H_LOADEDROMBANK], a
@@ -158,7 +158,7 @@ CopyVideoDataDouble::
 .keepgoing
 	ld a, 8
 	ld [H_VBCOPYDOUBLESIZE], a
-	call DelayFrame
+	call SafeDelayFrame
 	ld a, c
 	sub 8
 	ld c, a
@@ -185,36 +185,28 @@ ClearScreenArea::
 CopyScreenTileBufferToVRAM::
 ; Copy wTileMap to the BG Map starting at b * $100.
 ; This is done in thirds of 6 rows, so it takes 3 frames.
-
-	ld c, 6
-
-	ld hl, $600 * 0
-	coord de, 0, 6 * 0
-	call .setup
-	call DelayFrame
-
-	ld hl, $600 * 1
-	coord de, 0, 6 * 1
-	call .setup
-	call DelayFrame
-
-	ld hl, $600 * 2
-	coord de, 0, 6 * 2
-	call .setup
-	jp DelayFrame
-
-.setup
-	ld a, d
-	ld [H_VBCOPYBGSRC+1], a
-	call GetRowColAddressBgMap
-	ld a, l
-	ld [H_VBCOPYBGDEST], a
-	ld a, h
-	ld [H_VBCOPYBGDEST+1], a
-	ld a, c
-	ld [H_VBCOPYBGNUMROWS], a
-	ld a, e
-	ld [H_VBCOPYBGSRC], a
+	ld a, [rLY]
+	cp $81
+	call nc, DelayFrame ; if ly is past $80, then wait for another vblank for the tilemap to be successfully copied
+						; not exactly sure if needed
+	ld a, [H_AUTOBGTRANSFERDEST + 1]
+	push af
+	ld a, [H_AUTOBGTRANSFERDEST]
+	push af
+	ld a, [H_AUTOBGTRANSFERENABLED]
+	push af
+	xor a
+	ld [H_AUTOBGTRANSFERDEST], a
+	ld a, b
+	ld [H_AUTOBGTRANSFERDEST + 1], a
+	ld [H_AUTOBGTRANSFERENABLED], a
+	call SafeDelayFrame
+	pop af
+	ld [H_AUTOBGTRANSFERENABLED], a
+	pop af
+	ld [H_AUTOBGTRANSFERDEST], a
+	pop af
+	ld [H_AUTOBGTRANSFERDEST + 1], a
 	ret
 
 ClearScreen::
@@ -231,3 +223,13 @@ ClearScreen::
 	dec b
 	jr nz, .loop
 	jp Delay3
+
+SafeDelayFrame:
+	ld a, [wd732]
+	push af
+	res 7, a
+	ld [wd732], a
+	call DelayFrame
+	pop af
+	ld [wd732], a
+	ret

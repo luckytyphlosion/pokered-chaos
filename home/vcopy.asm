@@ -110,6 +110,11 @@ WriteCGBPalettes::
 	jr nz, .obp1Loop
 	ret
 
+RedrawRowOrColumnInaccessible:
+	ld a, [hRedrawRowOrColumnMode]
+	ld b, a
+	jr RedrawRowOrColumnCommon
+	
 RedrawRowOrColumn:: ; 1d01 (0:1d01)
 ; This function redraws a BG row of height 2 or a BG column of width 2.
 ; One of its main uses is redrawing the row or column that will be exposed upon
@@ -121,6 +126,10 @@ RedrawRowOrColumn:: ; 1d01 (0:1d01)
 	and a
 	ret z
 	ld b,a
+	ld a, [wChaosFlags1]
+	bit 1, a
+	ret nz
+RedrawRowOrColumnCommon:
 	xor a
 	ld [hRedrawRowOrColumnMode],a
 	dec b
@@ -189,6 +198,16 @@ RedrawRowOrColumn:: ; 1d01 (0:1d01)
 	jr nz,.loop2
 	ret
 
+InaccessibleVRAMTileMapTransfer:
+	ld [H_SPTEMP], sp
+	coord sp, 0, 0
+	ld a, [H_AUTOBGTRANSFERDEST + 1]
+	ld h, a
+	ld a, [H_AUTOBGTRANSFERDEST]
+	ld l, a
+	ld a, SCREEN_HEIGHT
+	jr TransferBGRowsInaccessible
+
 ; This function automatically transfers tile number data from the tile map at
 ; wTileMap to VRAM during V-blank. Note that it only transfers one third of the
 ; background per V-blank. It cycles through which third it draws.
@@ -202,7 +221,10 @@ AutoBgMapTransfer:: ; 1d57 (0:1d57)
 	ret z
 	ld a, [H_AUTOBGTRANSFERDEST]
 	and a
-	jr nz, .oldMode
+	jr nz, AutoBgMapTransfer_OldMode
+	ld a, [wChaosFlags1]
+	bit 0, a
+	ret nz
 ; change to wram bank 2
 	ld a, 2
 	ld [rSVBK], a ; change wram bank to 1 to get tilemap buffer
@@ -219,50 +241,40 @@ AutoBgMapTransfer:: ; 1d57 (0:1d57)
 	xor a
 	ld [rSVBK], a ; change wram bank back to normal
 	ret
-.oldMode
-	ld hl,[sp + 0]
-	ld a,h
-	ld [H_SPTEMP],a
-	ld a,l
-	ld [H_SPTEMP + 1],a ; save stack pinter
+AutoBgMapTransfer_OldMode:
+	ld [H_SPTEMP], sp
+	
+	ld a,[H_AUTOBGTRANSFERDEST + 1]
+	ld h,a
+	ld a,[H_AUTOBGTRANSFERDEST]
+	ld l,a
+	
 	ld a,[H_AUTOBGTRANSFERPORTION]
 	and a
 	jr z,.transferTopThird
 	dec a
 	jr z,.transferMiddleThird
 .transferBottomThird
-	coord hl, 0, 12
-	ld sp,hl
-	ld a,[H_AUTOBGTRANSFERDEST + 1]
-	ld h,a
-	ld a,[H_AUTOBGTRANSFERDEST]
-	ld l,a
+	coord sp, 0, 12
 	ld de,(12 * 32)
 	add hl,de
 	xor a ; TRANSFERTOP
 	jr .doTransfer
 .transferTopThird
-	coord hl, 0, 0
-	ld sp,hl
-	ld a,[H_AUTOBGTRANSFERDEST + 1]
-	ld h,a
-	ld a,[H_AUTOBGTRANSFERDEST]
-	ld l,a
+	coord sp, 0, 0
 	ld a,TRANSFERMIDDLE
 	jr .doTransfer
 .transferMiddleThird
-	coord hl, 0, 6
-	ld sp,hl
-	ld a,[H_AUTOBGTRANSFERDEST + 1]
-	ld h,a
-	ld a,[H_AUTOBGTRANSFERDEST]
-	ld l,a
+	coord sp, 0, 6
 	ld de,(6 * 32)
 	add hl,de
 	ld a,TRANSFERBOTTOM
 .doTransfer
 	ld [H_AUTOBGTRANSFERPORTION],a ; store next portion
-	ld b,6
+	ld a,6
+
+TransferBGRowsInaccessible:
+	ld bc, BG_MAP_WIDTH - SCREEN_WIDTH + 1
 
 TransferBgRows:: ; 1d9e (0:1d9e)
 ; unrolled loop and using pop for speed
@@ -280,48 +292,16 @@ TransferBgRows:: ; 1d9e (0:1d9e)
 	inc l
 	ld [hl], d
 
-	ld a, 32 - (20 - 1)
-	add l
-	ld l, a
-	jr nc, .ok
-	inc h
-.ok
-	dec b
+	add hl, bc
+	dec a
 	jr nz, TransferBgRows
 
-	ld a, [H_SPTEMP]
-	ld h, a
 	ld a, [H_SPTEMP + 1]
+	ld h, a
+	ld a, [H_SPTEMP]
 	ld l, a
 	ld sp, hl
 	ret
-
-; Copies [H_VBCOPYBGNUMROWS] rows from H_VBCOPYBGSRC to H_VBCOPYBGDEST.
-; If H_VBCOPYBGSRC is XX00, the transfer is disabled.
-VBlankCopyBgMap:: ; 1de1 (0:1de1)
-	ld a,[H_VBCOPYBGSRC] ; doubles as enabling byte
-	and a
-	ret z
-	ld hl,[sp + 0]
-	ld a,h
-	ld [H_SPTEMP],a
-	ld a,l
-	ld [H_SPTEMP + 1],a ; save stack pointer
-	ld a,[H_VBCOPYBGSRC]
-	ld l,a
-	ld a,[H_VBCOPYBGSRC + 1]
-	ld h,a
-	ld sp,hl
-	ld a,[H_VBCOPYBGDEST]
-	ld l,a
-	ld a,[H_VBCOPYBGDEST + 1]
-	ld h,a
-	ld a,[H_VBCOPYBGNUMROWS]
-	ld b,a
-	xor a
-	ld [H_VBCOPYBGSRC],a ; disable transfer so it doesn't continue next V-blank
-	jr TransferBgRows
-
 
 VBlankCopyDouble::
 ; Copy [H_VBCOPYDOUBLESIZE] 1bpp tiles

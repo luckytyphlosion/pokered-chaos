@@ -18,6 +18,8 @@ ChaosEffectBattleJumptable::
 	dw CE_RandomCurMoveTypePlayer
 	dw CE_RandomCurMoveAccPlayer
 	dw CE_RandomCurMoveMaxPPPlayer
+	dw CE_Superfast
+	dw CE_InaccessibleTilemap
 ChaosEffectBattleJumptableEnd::
 
 CE_RandomCurMoveNumberEnemy:

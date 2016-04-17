@@ -47,6 +47,9 @@ const_value = 1
 	ce_const SSD_GRASS_MASK
 	ce_const SSD_MOVEMENT_DELAY
 	ce_const SSD_SPRITE_IMAGE_BASE_OFFSET
+; end of SSD constants
+	ce_const SUPERFAST
+	ce_const INACCESSIBLE_ROW_COLUMN
 	
 ; battle
 const_value = 1
@@ -71,6 +74,8 @@ ce_type = CHAOS_TYPE_BATTLE
 	ce_const CURMOVE_TYPE_P
 	ce_const CURMOVE_ACC_P
 	ce_const CURMOVE_MAXPP_P
+	ce_const SUPERFAST
+	ce_const INACCESSIBLE_TILEMAP
 	
 ; menu
 const_value = 1
@@ -83,3 +88,5 @@ ce_type = CHAOS_TYPE_MENU
 	ce_const JOYPAD_CHAOS
 	ce_const RANDOM_PALETTES
 	ce_const INACCESSIBLE_VRAM
+	ce_const SUPERFAST
+	ce_const INACCESSIBLE_TILEMAP

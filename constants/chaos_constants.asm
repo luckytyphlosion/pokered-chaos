@@ -38,6 +38,7 @@ const_value = 1
 	ce_const SSD_PIXEL_XPOS
 	ce_const SSD_INTRA_ANIM_FRAMECOUNTER
 	ce_const SSD_ANIM_FRAMECOUNTER
+	ce_const SSD_VISIBILITY
 	ce_const SSD_FACING_DIR
 	ce_const SSD_NPC_WALKCOUNTER
 	ce_const SSD_GRID_YPOS

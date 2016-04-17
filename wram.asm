@@ -2875,12 +2875,12 @@ wCurPalette::
 	ds 1
 
 wSSDCorruptionValues::
-	ds 14
+	ds 10
 	
 wSSDWhichSprite::
-	ds 13
+	ds 15
 
-	ds 3
+	ds 5
 
 wObtainedHiddenItemsFlags::
 	ds 14

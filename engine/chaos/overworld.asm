@@ -15,15 +15,15 @@ ChaosEffectOverworldJumptable::
 	dw CE_SSD_PixelXPos ; "any" value (don't go out of range obvs), continuous because ledges
 	dw CE_SSD_IntraAnimFrameCounter ; any value, only thing it does it freeze the player animation, continuous
 	dw CE_SSD_AnimFrameCounter ; any value, codemod (force base value) + continuous []
-;	dw CE_SSD_Visibility ; any non-ff value, continuous
-;	dw CE_SSD_FacingDirection ; any value, codemod (force base value) + continuous
-;	dw CE_SSD_NPCWalkCounter ; any value, codemod (force start value)
-;	dw CE_SSD_GridYPos ; "any" value, instant
-;	dw CE_SSD_GridXPos ; "any" value, instant
-;	dw CE_SSD_MovementByte ; set to fe for randumb movement, instant
-;	dw CE_SSD_GrassMask ; set to 80 for grassmask, continuous
-;	dw CE_SSD_MovementDelay ; "any" value (lower = more chaos), continuous
-;	dw CE_SSD_SpriteImageBaseOffset ; "any" value, continuous
+	dw CE_SSD_Visibility ; any non-ff value, continuous
+	dw CE_SSD_FacingDirection ; any value, codemod (force base value) + continuous
+	dw CE_SSD_NPCWalkCounter ; any value, codemod (force start value)
+	dw CE_SSD_GridYPos ; "any" value, instant
+	dw CE_SSD_GridXPos ; "any" value, instant
+	dw CE_SSD_MovementByte ; set to fe for randumb movement, instant
+	dw CE_SSD_GrassMask ; set to 80 for grassmask, continuous
+	dw CE_SSD_MovementDelay ; "any" value (lower = more chaos), continuous
+	dw CE_SSD_SpriteImageBaseOffset ; "any" value, continuous
 ChaosEffectOverworldJumptableEnd::
 
 CE_RandomMonPoison:
@@ -284,7 +284,7 @@ CE_SSD_CanAnySpriteBeInMotion:
 	pop hl
 	scf
 	ret
-	
+
 CE_SSD_MovementStatus:
 	call CheckIfFirstRunthrough
 	ret nz
@@ -423,8 +423,8 @@ CE_SSD_PixelXPos:
 	cp $a0
 	jr nc, .randomLoop
 	ld c, a
-	ld a, b
-	and $f0
+	ld a, [hRandomSub]
+	and $f
 	jr nz, .doNotAddOffset
 	call Random
 	and $f
@@ -484,12 +484,226 @@ CE_SSD_AnimFrameCounter:
 	ld [hl], a
 	ret
 
-;	dw CE_SSD_FacingDirection ; any value, codemod (force base value) + continuous
-;	dw CE_SSD_NPCWalkCounter ; any value, codemod (force start value)
-;	dw CE_SSD_GridYPos ; "any" value, instant
-;	dw CE_SSD_GridXPos ; "any" value, instant
-;	dw CE_SSD_MovementByte ; set to fe for randumb movement, instant
-;	dw CE_SSD_GrassMask ; set to 80 for grassmask, continuous
-;	dw CE_SSD_MovementDelay ; "any" value (lower = more chaos), continuous
-;	dw CE_SSD_SpriteImageBaseOffset ; "any" value, continuous
+CE_SSD_Visibility:
+	ld hl, wSSDCorruptionFlags
+	set 4, [hl]
+	call CheckIfNextFrameWillReplaceChaosEffect
+	jr nz, .doNotResetFlag
+	res 4, [hl]
+	ret
+.doNotResetFlag
+	call CheckIfFirstRunthrough
+	ret nz
+; get sprite slot
+	ld a, [wNumSprites]
+	and a
+	ret z
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
+	ld [wSSDWhichSprite + 6], a
+	ret
+
+CE_SSD_FacingDirection:
+	ld hl, wSSDCorruptionFlags
+	set 5, [hl]
+	call CheckIfNextFrameWillReplaceChaosEffect
+	jr nz, .doNotResetFlag
+	res 5, [hl]
+	ret
+.doNotResetFlag
+	call CheckIfFirstRunthrough
+	ret nz
+; get sprite slot
+	call CE_SSD_GetRandomSpriteIndex
+	ld [wSSDWhichSprite + 7], a
+; get random facing direction
+	call Random
+	and $3
+	ld c, a
+	inc c
+	xor a
+	jr .handleLoop
+.loop
+	add $4
+.handleLoop
+	dec c
+	jr nz, .loop
+	ld [wSSDCorruptionValues + 5], a
+	ret
+
+CE_SSD_NPCWalkCounter:
+	ld hl, wSSDCorruptionFlags
+	set 6, [hl]
+	call CheckIfNextFrameWillReplaceChaosEffect
+	jr nz, .doNotResetFlag
+	res 6, [hl]
+	ret
+.doNotResetFlag
+	call CheckIfFirstRunthrough
+	ret nz
+	call CE_SSD_CanAnySpriteMove
+	jr c, .spritesCanMove
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
+	jr .writeSpriteIndex
+.spritesCanMove
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
+	call CE_SSD_CanSpriteMove
+	jr nc, .spritesCanMove
+.writeSpriteIndex
+	ld [wSSDWhichSprite + 8], a
+	call Random
+	ld [wSSDCorruptionValues + 6], a
+	ret
 	
+CE_SSD_GridYPos:
+	call CheckIfFirstRunthrough
+	jr nz, .writeValue
+; calc new value
+	ld a, [wNumSprites]
+	and a
+	ret z
+	
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
+	ld [wSSDWhichSprite + 9], a
+	
+	ld a, [wCurMapHeight]
+	add a
+	add $8
+	ld b, a
+	inc b
+	call DetermineBitmaskForRandomRange
+	ld c, a
+.randomHeightLoop
+	call Random
+	and c
+	cp b
+	jr nc, .randomHeightLoop
+	sub $4
+	ld [wSSDCorruptionValues + 7], a
+.writeValue
+	ld a, [wSSDWhichSprite + 9]
+	swap a
+	ld c, a
+	ld b, $0
+	ld hl, wSpriteStateData2 + 4
+	add hl, bc
+	ld a, [wSSDCorruptionValues + 7]
+	ld [hl], a
+	ret
+	
+CE_SSD_GridXPos:
+	call CheckIfFirstRunthrough
+	jr nz, .writeValue
+; calc new value
+	ld a, [wNumSprites]
+	and a
+	ret z
+	
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
+	ld [wSSDWhichSprite + 10], a
+	
+	ld a, [wCurMapWidth]
+	add a
+	add $8
+	ld b, a
+	inc b
+	call DetermineBitmaskForRandomRange
+	ld c, a
+.randomHeightLoop
+	call Random
+	and c
+	cp b
+	jr nc, .randomHeightLoop
+	sub $4
+	ld [wSSDCorruptionValues + 8], a
+.writeValue
+	ld a, [wSSDWhichSprite + 10]
+	swap a
+	ld c, a
+	ld b, $0
+	ld hl, wSpriteStateData2 + 4
+	add hl, bc
+	ld a, [wSSDCorruptionValues + 8]
+	ld [hl], a
+	ret
+
+CE_SSD_MovementByte:
+	call CheckIfFirstRunthrough
+	jr nz, .writeValue
+	ld a, [wNumSprites]
+	and a
+	ret z
+.randomLoop
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
+	call CE_SSD_CanSpriteMove
+	jr c, .randomLoop
+	ld [wSSDWhichSprite + 11], a
+.writeValue
+	ld a, [wSSDWhichSprite + 11]
+	swap a
+	ld c, a
+	ld b, $0
+	ld hl, wSpriteStateData2 + 6
+	add hl, bc
+	ld [hl], $fe
+	ret
+
+CE_SSD_GrassMask:
+	ld hl, wSSDCorruptionFlags
+	set 7, [hl]
+	call CheckIfNextFrameWillReplaceChaosEffect
+	jr nz, .doNotResetFlag
+	res 7, [hl]
+	ret
+.doNotResetFlag
+	call CheckIfFirstRunthrough
+	ret nz
+	call CE_SSD_GetRandomSpriteIndex
+	ld [wSSDWhichSprite + 12], a
+	ret
+	
+CE_SSD_MovementDelay:
+	ld hl, wSSDCorruptionFlags + 1
+	set 0, [hl]
+	call CheckIfNextFrameWillReplaceChaosEffect
+	jr nz, .doNotResetFlag
+	res 0, [hl]
+	ret
+.doNotResetFlag
+	call CheckIfFirstRunthrough
+	ret nz
+	ld a, [wNumSprites]
+	and a
+	ret z
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
+	ld [wSSDWhichSprite + 13], a
+	ret
+	
+	
+CE_SSD_SpriteImageBaseOffset:
+	call CheckIfFirstRunthrough
+	jr nz, .writeOffset
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer
+	ld [wSSDWhichSprite + 14], a
+	call Random
+	and $f
+	jr z, .completelyRandomBaseOffset
+.randomLoop
+	call Random
+	and $f
+	cp $d
+	jr nc, .randomLoop
+	ld [wSSDCorruptionValues + 9], a
+	jr .writeOffset
+.completelyRandomBaseOffset
+	ld a, [hRandomSub]
+	ld [wSSDCorruptionValues + 9], a
+.writeOffset
+	ld a, [wSSDWhichSprite + 14]
+	swap a
+	ld c, a
+	ld b, $0
+	ld hl, wSpriteStateData2 + $1e
+	add hl, bc
+	ld a, [wSSDCorruptionValues + 9]
+	ld [hl], a
+	ret

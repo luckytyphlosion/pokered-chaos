@@ -25,6 +25,15 @@ UpdatePlayerSprite: ; 4e31 (1:4e31)
 	ld a, [wWalkCounter]
 	and a
 	jr nz, .moving
+	ld a, [wSSDCorruptionFlags]
+	bit 5, a
+	jr z, .doNotForceFacing
+	ld a, [wSSDWhichSprite + 7]
+	and a
+	jr nz, .doNotForceFacing
+	ld a, [wSSDCorruptionValues + 5]
+	jr .next
+.doNotForceFacing
 	ld a, [wPlayerMovingDirection]
 ; check if down
 	bit PLAYER_DIR_BIT_DOWN, a
@@ -281,14 +290,27 @@ TryWalking_CheckForCorruption:
 	ld d, a
 .checkForXDelta
 	bit 1, [hl]
-	jr z, AfterCheckingDeltaCorruption
+	jr z, .checkForFacing
 	ld a, [wSSDWhichSprite + 1]
 	call DoesCurrentSpriteOffsetMatchSpriteA
 	jr nz, AfterCheckingDeltaCorruption
 	ld a, [wSSDCorruptionValues + 1]
 	add e
 	ld e, a
-
+.checkForFacing
+	ld a, [wSSDCorruptionFlags]
+	bit 5, a
+	jr z, AfterCheckingDeltaCorruption
+	ld a, [wSSDWhichSprite + 7]
+	call DoesCurrentSpriteOffsetMatchSpriteA
+	jr nz, AfterCheckingDeltaCorruption
+	ld a, [wSSDCorruptionValues + 5]
+	pop bc
+	pop hl
+	ld c, a
+	push hl
+	push bc
+	
 AfterCheckingDeltaCorruption:
 	pop bc
 	pop hl
@@ -337,7 +359,18 @@ TryWalking: ; 4fcb (1:4fcb)
 	ld [hl], a          ; update X position
 	ld a, [H_CURRENTSPRITEOFFSET]
 	ld l, a
+	ld a, [wSSDCorruptionFlags]
+	bit 6, a
+	jr z, .regularWalkCounterValue
+	ld a, [wSSDWhichSprite + 8]
+	call DoesCurrentSpriteOffsetMatchSpriteA
+	jr nz, .regularWalkCounterValue
+	ld a, [wSSDCorruptionValues + 6]
+	ld [hl], a
+	jr .afterWritingValue
+.regularWalkCounterValue
 	ld [hl], $10        ; c2x0=16: walk animation counter
+.afterWritingValue
 	dec h
 	inc l
 	ld [hl], $3         ; c1x1: set movement status to walking
@@ -554,7 +587,18 @@ InitializeSpriteScreenPosition: ; 50bd (1:50bd)
 
 ; tests if sprite is off screen or otherwise unable to do anything
 CheckSpriteAvailability: ; 50dc (1:50dc)
-	
+	ld a, [wSSDCorruptionFlags]
+	bit 4, a
+	jr z, .noAvailibilityCorruption
+	ld a, [wSSDWhichSprite + 6]
+	call DoesCurrentSpriteOffsetMatchSpriteA
+	jr nz, .noAvailibilityCorruption
+	call GetTileSpriteStandsOn
+	ld bc, -(SCREEN_WIDTH - 1)
+	add hl, bc
+	ld a, [hl]
+	jr .spriteVisible
+.noAvailibilityCorruption
 	predef IsObjectHidden
 	ld a, [$ffe5]
 	and a
@@ -624,6 +668,15 @@ CheckSpriteAvailability: ; 50dc (1:50dc)
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $7
 	ld l, a
+	ld a, [wSSDCorruptionFlags]
+	bit 7, a
+	jr z, .normalGrassTest
+	ld a, [wSSDWhichSprite + 12]
+	call DoesCurrentSpriteOffsetMatchSpriteA
+	jr nz, .normalGrassTest
+	ld a, $80
+	jr .notInGrass
+.normalGrassTest
 	ld a, [wGrassTile]
 	cp c
 	ld a, $0
@@ -762,6 +815,13 @@ CanWalkOntoTile: ; 516e (1:516e)
 	add $8
 	ld l, a
 	call Random
+	ld a, [wSSDCorruptionFlags + 1]
+	bit 0, a
+	jr z, .regularBitmask
+	ld [hl], $1
+	scf
+	ret
+.regularBitmask
 	ld a, [hRandomAdd]
 	and $7f
 	ld [hl], a         ; c2x8: set next movement delay to a random value in [0,$7f] (again with delay $100 if value is 0)

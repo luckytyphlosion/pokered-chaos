@@ -243,7 +243,7 @@ GetRandomRangeFor16BitValue:
 .rejectionSampleLoop1
 	call Random
 	and c
-	cp h
+	cp d
 	jr z, .doRejectionSampleLoop2
 	jr nc, .rejectionSampleLoop1
 	ld d, a
@@ -253,14 +253,6 @@ GetRandomRangeFor16BitValue:
 	ret
 .doRejectionSampleLoop2
 	ld d, a
-	call Random
-	cp e
-	jr z, .gotLowerByte
-	jr nc, .handleEightBitValue
-.gotLowerByte
-	ld e, a
-	ret
-
 .handleEightBitValue
 	ld a, e
 	call DetermineBitmaskForRandomRange
@@ -269,9 +261,9 @@ GetRandomRangeFor16BitValue:
 	call Random
 	and c
 	cp e
-	jr z, .gotLowerByte2
-	jr nc, .eightBitValueRejectionLoop
-.gotLowerByte2
+	jr z, .gotLowerByte
+	jr nc, .handleEightBitValue
+.gotLowerByte
 	ld e, a
 	ret
 

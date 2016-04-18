@@ -76,6 +76,40 @@ ce_type = CHAOS_TYPE_BATTLE
 	ce_const CURMOVE_MAXPP_P
 	ce_const SUPERFAST
 	ce_const INACCESSIBLE_TILEMAP
+	ce_const ENEMY_MON_SPECIES_2
+	ce_const BATTLE_MON_SPECIES_2
+	ce_const EBS_SPECIES
+	ce_const EBS_HP
+	ce_const EBS_PARTYPOS
+	ce_const EBS_STATUS
+	ce_const EBS_TYPE1
+	ce_const EBS_TYPE2
+	ce_const EBS_MOVES
+	ce_const EBS_DVS
+	ce_const EBS_LEVEL
+	ce_const EBS_MAXHP
+	ce_const EBS_ATTACK
+	ce_const EBS_DEFENSE
+	ce_const EBS_SPEED
+	ce_const EBS_SPECIAL
+	ce_const EBS_BASESTATS
+	ce_const EBS_CATCHRATE
+	ce_const EBS_BASEEXP
+	ce_const PBS_SPECIES
+	ce_const PBS_HP
+	ce_const PBS_PARTYPOS
+	ce_const PBS_STATUS
+	ce_const PBS_TYPE1
+	ce_const PBS_TYPE2
+	ce_const PBS_MOVES
+	ce_const PBS_DVS
+	ce_const PBS_LEVEL
+	ce_const PBS_MAXHP
+	ce_const PBS_ATTACK
+	ce_const PBS_DEFENSE
+	ce_const PBS_SPEED
+	ce_const PBS_SPECIAL
+	ce_const PBS_PP
 	
 ; menu
 const_value = 1

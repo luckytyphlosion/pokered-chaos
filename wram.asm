@@ -2498,7 +2498,11 @@ wSpriteSetID:: ; d3a8
 wObjectDataPointerTemp:: ; d3a9
 	ds 2
 
-	ds 2
+wPBSChaosSpecies::
+	ds 1
+	
+wEBSChaosSpecies::
+	ds 1
 
 wMapBackgroundTile:: ; d3ad
 ; the tile shown outside the boundaries of the map
@@ -2655,7 +2659,10 @@ wBluesHouseCurScript:: ; d5f3
 	ds 1
 wViridianCityCurScript:: ; d5f4
 	ds 1
-	ds 2
+wEnemyMonSpecies2Chaos::
+	ds 1
+wBattleMonSpecies2Chaos::
+	ds 1
 wPewterCityCurScript:: ; d5f7
 	ds 1
 wRoute3CurScript:: ; d5f8
@@ -2972,6 +2979,8 @@ wd728:: ; d728
 
 wChaosFlags1::
 ; bit 0: inaccessible tilemap
+; bit 1: inaccessible row/column redraw
+; bit 2: inaccessible oam
 	ds 1
 
 wBeatGymFlags:: ; d72a

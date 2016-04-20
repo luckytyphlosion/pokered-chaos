@@ -21,56 +21,35 @@ ChaosEffectBattleJumptable::
 	dw CE_Superfast
 	dw CE_InaccessibleTilemap
 	dw CE_EnemyMonSpecies2 ; used in:
-	                       ; - give pokemon code
-						   ; - common text code (for playing mon's cry and checking for marowak ghost)
-						   ; - send out code
-						   ; - LoadEnemyMonData input
-						   ; - mon to catch
 	dw CE_BattleMonSpecies2 ; used in:
-	                        ; - change mon pic input
-							; - LoadMonBackPic input
-							; - LoadBattleMonFromParty for GetMonHeader
-							
 	dw CE_EnemyBattleStruct_Species ; used in:
-	                                ; - safari zone code to determine catch rate
-									; - transform code
-									; - AnimationFlashMonPic code
-									; - GetMoveSound code to get the mon's cry
-									; - Transform anim code
-									; - reloading the mon's front sprite if looked at status screen
-									; - GetEnemyMonStat to get base stats
-									; - critical hit test
 	dw CE_EnemyBattleStruct_HP      ; used to store current HP
-	                                ; don't let this go over 999
 	dw CE_EnemyBattleStruct_PartyPos ; used in:
-	                                 ; - enemy mon fainting code (to prevent sending out that mon)
-									 ; - switch out code
 	dw CE_EnemyBattleStruct_Status ; used to store the mon's status
 	dw CE_EnemyBattleStruct_Type1  ; types
 	dw CE_EnemyBattleStruct_Type2  ; make sure that it is a valid type
-	dw CE_EnemyBattleStruct_Moves  ; moves (make sure it is valid)
-	dw CE_EnemyBattleStruct_DVs    ; only relevant for wild pokemon
+	dw CE_EnemyBattleStruct_Move1
+	dw CE_EnemyBattleStruct_Move2
+	dw CE_EnemyBattleStruct_Move3
+	dw CE_EnemyBattleStruct_Move4 ; moves (make sure it is valid)
 	dw CE_EnemyBattleStruct_Level  ; current mon level
-	                               ; don't overbuff
 	dw CE_EnemyBattleStruct_MaxHP  ; don't make this = 0 or > 999
 	dw CE_EnemyBattleStruct_Attack ; stats
 	dw CE_EnemyBattleStruct_Defense
 	dw CE_EnemyBattleStruct_Speed
 	dw CE_EnemyBattleStruct_Special
 	dw CE_EnemyBattleStruct_BaseStats ; used in stat exp calculation
-	dw CE_EnemyBattleStruct_CatchRate ; catch rate stuff
 	dw CE_EnemyBattleStruct_BaseExp ; exp calc
 	dw CE_PlayerBattleStruct_Species ; used in:
-	                                 ; - transform code
-									 ; - more change mon pic
-									 ; - critical hit test
 	dw CE_PlayerBattleStruct_HP
 	dw CE_PlayerBattleStruct_PartyPos
 	dw CE_PlayerBattleStruct_Status
 	dw CE_PlayerBattleStruct_Type1
 	dw CE_PlayerBattleStruct_Type2
-	dw CE_PlayerBattleStruct_Moves
-	dw CE_PlayerBattleStruct_DVs
+	dw CE_PlayerBattleStruct_Move1
+	dw CE_PlayerBattleStruct_Move2
+	dw CE_PlayerBattleStruct_Move3
+	dw CE_PlayerBattleStruct_Move4
 	dw CE_PlayerBattleStruct_Level
 	dw CE_PlayerBattleStruct_MaxHP
 	dw CE_PlayerBattleStruct_Attack
@@ -78,6 +57,51 @@ ChaosEffectBattleJumptable::
 	dw CE_PlayerBattleStruct_Speed
 	dw CE_PlayerBattleStruct_Special
 	dw CE_PlayerBattleStruct_PP
+	dw CE_InaccessibleOAM
+	dw CE_ForceAnimationsOn
+
+;	dw CE_EnemyMonSpecies2 ; used in:
+;	                       ; - give pokemon code
+;						   ; - common text code (for playing mon's cry and checking for marowak ghost)
+;						   ; - send out code
+;						   ; - LoadEnemyMonData input
+;						   ; - mon to catch
+;	dw CE_BattleMonSpecies2 ; used in:
+;	                        ; - change mon pic input
+;							; - LoadMonBackPic input
+;							; - LoadBattleMonFromParty for GetMonHeader
+;							
+;	dw CE_EnemyBattleStruct_Species ; used in:
+;	                                ; - safari zone code to determine catch rate
+;									; - transform code
+;									; - AnimationFlashMonPic code
+;									; - GetMoveSound code to get the mon's cry
+;									; - Transform anim code
+;									; - reloading the mon's front sprite if looked at status screen
+;									; - GetEnemyMonStat to get base stats
+;									; - critical hit test
+;	dw CE_EnemyBattleStruct_HP      ; used to store current HP
+;	                                ; don't let this go over 999
+;	dw CE_EnemyBattleStruct_PartyPos ; used in:
+;	                                 ; - enemy mon fainting code (to prevent sending out that mon)
+;									 ; - switch out code
+;	dw CE_EnemyBattleStruct_Status ; used to store the mon's status
+;	dw CE_EnemyBattleStruct_Type1  ; types
+;	dw CE_EnemyBattleStruct_Type2  ; make sure that it is a valid type
+;	dw CE_EnemyBattleStruct_Moves  ; moves (make sure it is valid)
+;	dw CE_EnemyBattleStruct_Level  ; current mon level
+;	                               ; don't overbuff
+;	dw CE_EnemyBattleStruct_MaxHP  ; don't make this = 0 or > 999
+;	dw CE_EnemyBattleStruct_Attack ; stats
+;	dw CE_EnemyBattleStruct_Defense
+;	dw CE_EnemyBattleStruct_Speed
+;	dw CE_EnemyBattleStruct_Special
+;	dw CE_EnemyBattleStruct_BaseStats ; used in stat exp calculation
+;	dw CE_EnemyBattleStruct_BaseExp ; exp calc
+;	dw CE_PlayerBattleStruct_Species ; used in:
+;	                                 ; - transform code
+;									 ; - more change mon pic
+;									 ; - critical hit test
 ChaosEffectBattleJumptableEnd::
 
 CE_RandomCurMoveNumberEnemy:
@@ -219,16 +243,17 @@ CE_RandomCurMoveMaxPPPlayer:
 CE_GetRandomPokemon:
 	push hl
 	push de
+.randomLoop
 	call Random
 	cp NUM_POKEMON
-	jr nc, CE_GetRandomPokemon
+	jr nc, .randomLoop
 	inc a
 	ld b, a
 	ld a, [wd11e]
 	push af
 	ld a, b
 	ld [wd11e], a
-	callab IndexToPokedex
+	callab PokedexToIndex
 	ld a, [wd11e]
 	ld b, a
 	pop af
@@ -271,11 +296,31 @@ CE_BattleStruct_Species:
 	jr nz, .applyEffects
 	call CE_GetRandomPokemon
 	ld [de], a
-.randomLoop
+.applyEffects
 	ld a, [de]
 	ld [hl], a
 	ret
 	
+CheckForStatOverflowOrZero:
+; if stat is 0, return 1
+; if stat is >999, return 999
+; else, return the stat
+	ld a, h
+	or l
+	jr nz, .notZero
+	inc l
+	ret
+.notZero
+	ld a, h
+	cp 999 / $100
+	ret c
+	ld a, l
+	cp 999 & $ff
+	ret c
+; cap HP
+	ld hl, 999
+	ret
+
 CE_EnemyBattleStruct_HP:
 	ld hl, wEnemyMonHP
 	jr CE_BattleStruct_HP
@@ -303,15 +348,7 @@ CE_BattleStruct_HP:
 	add hl, hl
 ; hl = 2*curHP
 ; bc = curHP
-	ld a, h
-	cp 999 / $100
-	jr c, .doNotCap
-	ld a, l
-	cp 999 & $ff
-	jr c, .doNotCap
-; cap HP
-	ld hl, 999
-.doNotCap
+	call CheckForStatOverflowOrZero
 	push bc
 	ld d, h
 	ld e, l
@@ -320,11 +357,21 @@ CE_BattleStruct_HP:
 	pop bc
 	ld a, e
 	sub c
-	ld c, a
+	ld e, a
 	ld a, d
 	sbc b
+	ld d, a
+	push hl
+	ld h, b
+	ld l, c
+	add hl, de
+	ld b, h
+	ld c, l
+	pop hl
+.writeNewHP
 ; bc = rand[-curHP, curHP]
 	pop hl
+	ld a, b
 	ld [hli], a
 	ld [hl], c
 	ret
@@ -338,7 +385,7 @@ CE_PlayerBattleStruct_PartyPos:
 	ld hl, wPlayerMonNumber
 	ld de, wPartyCount
 	
-BattleStruct_PartyPos:
+CE_BattleStruct_PartyPos:
 	call CheckIfFirstRunthrough
 	ret nz
 	ld a, [de]
@@ -382,10 +429,11 @@ CE_PlayerBattleStruct_Status:
 	
 CE_BattleStruct_Status:
 	call CheckIfFirstRunthrough
-	ret z
+	ret nz
 .loop
 	call CE_GetRandomStatus
 	or [hl]
+	ld [hl], a
 .randomLoop
 	call Random
 	and $1
@@ -415,12 +463,36 @@ CE_BattleStruct_Types:
 	ld [hl], a
 	ret
 	
-CE_EnemyBattleStruct_Moves:
+CE_EnemyBattleStruct_Move1:
 	ld hl, wEnemyMonMoves
 	jr CE_BattleStruct_Moves
 	
-CE_PlayerBattleStruct_Moves:
+CE_EnemyBattleStruct_Move2:
+	ld hl, wEnemyMonMoves + 1
+	jr CE_BattleStruct_Moves
+	
+CE_EnemyBattleStruct_Move3:
+	ld hl, wEnemyMonMoves + 2
+	jr CE_BattleStruct_Moves
+	
+CE_EnemyBattleStruct_Move4:
+	ld hl, wEnemyMonMoves + 3
+	jr CE_BattleStruct_Moves
+	
+CE_PlayerBattleStruct_Move1:
 	ld hl, wBattleMonMoves
+	jr CE_BattleStruct_Moves
+	
+CE_PlayerBattleStruct_Move2:
+	ld hl, wBattleMonMoves + 1
+	jr CE_BattleStruct_Moves
+	
+CE_PlayerBattleStruct_Move3:
+	ld hl, wBattleMonMoves + 2
+	jr CE_BattleStruct_Moves
+	
+CE_PlayerBattleStruct_Move4:
+	ld hl, wBattleMonMoves + 3
 	
 CE_BattleStruct_Moves:
 	call CheckIfFirstRunthrough
@@ -430,13 +502,32 @@ CE_BattleStruct_Moves:
 	cp NUM_ATTACKS + 1
 	jr nc, .randomLoop
 	inc a
+	ld [hl], a
+	ret
+	
+GetRandomRangeOfRandomRange_16Bit:
+; calculate rand(0,rand(0,de)) + 1
+; and return in de
+	call GetRandomRangeFor16BitValue
+	call GetRandomRangeFor16BitValue
+	inc de
+	ret
+
+GetRandomRangeOfRandomRange_8Bit:
+; calculate rand(0,rand(0,b))
+; and return in b
+	ld a, b
+	call DetermineBitmaskForRandomRange
+	ld c, a
+	call .randomLoop
+	dec b
+.randomLoop
+	call Random
+	and c
+	cp b
+	jr nc, .randomLoop
 	ld b, a
-	ld a, [hRandomSub]
-	and $3
-	ld e, a
-	ld d, $0
-	add hl, de
-	ld [hl], b
+	inc b
 	ret
 	
 CE_EnemyBattleStruct_Level:
@@ -447,79 +538,156 @@ CE_PlayerBattleStruct_Level
 	ld hl, wBattleMonLevel
 	
 CE_BattleStruct_Level:
+; chance of modifier n = l - n / l
 	call CheckIfFirstRunthrough
 	ret nz
+	ld b, [hl]
+	call GetRandomRangeOfRandomRange_8Bit
+	ld a, [hRandomSub]
+	and $1
+	jr z, .addOffset
 	ld a, [hl]
-	ld b, a
-	inc b
-	call DetermineBitmaskForRandomRange
-	ld c, a
+	sub b
+	ld [hl], a
+	ret
+.addOffset
+	ld a, [hl]
+	add b
+	ld [hl], a
+	ret
+	
+CE_EnemyBattleStruct_MaxHP:
+	ld de, wEnemyMonMaxHP
+	ld hl, wEnemyMonUnmodifiedMaxHP
+	jr CE_BattleStruct_Stat
+	
+CE_PlayerBattleStruct_MaxHP:
+	ld de, wBattleMonMaxHP
+	ld hl, wPlayerMonUnmodifiedMaxHP
+	jr CE_BattleStruct_Stat
+	
+CE_EnemyBattleStruct_Attack:
+	ld de, wEnemyMonAttack
+	ld hl, wEnemyMonUnmodifiedAttack
+	jr CE_BattleStruct_Stat
+	
+CE_EnemyBattleStruct_Defense:
+	ld de, wEnemyMonDefense
+	ld hl, wEnemyMonUnmodifiedDefense
+	jr CE_BattleStruct_Stat
+	
+CE_EnemyBattleStruct_Speed:
+	ld de, wEnemyMonSpeed
+	ld hl, wEnemyMonUnmodifiedSpeed
+	jr CE_BattleStruct_Stat
+	
+CE_EnemyBattleStruct_Special:
+	ld de, wEnemyMonSpecial
+	ld hl, wEnemyMonUnmodifiedSpecial
+	jr CE_BattleStruct_Stat
+	
+CE_PlayerBattleStruct_Attack:
+	ld de, wBattleMonAttack
+	ld hl, wPlayerMonUnmodifiedAttack
+	jr CE_BattleStruct_Stat
+	
+CE_PlayerBattleStruct_Defense:
+	ld de, wBattleMonDefense
+	ld hl, wPlayerMonUnmodifiedDefense
+	jr CE_BattleStruct_Stat
+	
+CE_PlayerBattleStruct_Speed:
+	ld de, wBattleMonSpeed
+	ld hl, wPlayerMonUnmodifiedSpeed
+	jr CE_BattleStruct_Stat
+	
+CE_PlayerBattleStruct_Special:
+	ld de, wBattleMonSpecial
+	ld hl, wPlayerMonUnmodifiedSpecial
+	jr CE_BattleStruct_Stat
+
+; add more stuff here
+CE_BattleStruct_Stat:
+	call CheckIfFirstRunthrough
+	ret nz
+	push de
+	ld a, [hli]
+	ld d, a
+	ld e, [hl]
+	call GetRandomRangeOfRandomRange_16Bit
+	call Random
+	and $1
+	push hl
+	ld a, [hld]
+	ld h, [hl]
+	ld l, a
+	jr z, .subtractOffset
+	add hl, de
+	call CheckForStatOverflowOrZero
+	jr .copyToUnmodifiedStat
+.subtractOffset
+	ld a, l
+	sub e
+	ld l, a
+	ld a, h
+	sbc d
+	ld h, a
+	jr c, .setToOne
+	or l
+	jr nz, .copyToUnmodifiedStat
+.setToOne
+	ld hl, $1
+.copyToUnmodifiedStat
+	pop de
+	ld a, l
+	ld [de], a
+	dec de
+	ld a, h
+	ld [de], a
+	pop de
+	ld [de], a
+	inc de
+	ld a, l
+	ld [de], a
+	ret
+	
+CE_EnemyBattleStruct_BaseStats:
+	call CheckIfFirstRunthrough
+	ret nz
 .randomLoop
 	call Random
-	and c
-	cp b
+	and $7
+	cp 5
 	jr nc, .randomLoop
-	ld b, a
+	ld e, a
 	ld d, $0
-.modifyLevelLoop
-; b = count
-; c = temp for random value
-; d = sum of bits
-; e = temp for loop count
-	ld a, b
-	cp $9 ; number of bitshifts left
-	jr c, .lastRun
-	call Random
-	ld c, a
-	ld e, $8
-	ld a, d
-.addBitsLoop
-	srl c
-	adc $0
-	dec e
-	jr nz, .addBitsLoop
-	ld d, a
-	ld a, b
-	sub $8
-	jr .modifyLevelLoop
-.lastRun
-	call Random
-	ld c, a
-	ld a, d
-.addBitsLoop2
-	srl c
-	adc $0
-	dec b
-	jr nz, .addBitsLoop2
-	ld d, [hl] ; get level
-	sub d ; subtract sumOfBits - level
+	ld hl, wEnemyMonBaseStats
+	add hl, de
+	ld a, [hRandomSub]
 	ld [hl], a
 	ret
 
-;	dw CE_EnemyBattleStruct_Level  ; current mon level
-;	                               ; don't overbuff
-;	dw CE_EnemyBattleStruct_MaxHP  ; don't make this = 0 or > 999
-;	dw CE_EnemyBattleStruct_Attack ; stats
-;	dw CE_EnemyBattleStruct_Defense
-;	dw CE_EnemyBattleStruct_Speed
-;	dw CE_EnemyBattleStruct_Special
-;	dw CE_EnemyBattleStruct_BaseStats ; used in stat exp calculation
-;	dw CE_EnemyBattleStruct_CatchRate ; catch rate stuff
-;	dw CE_EnemyBattleStruct_BaseExp ; exp calc
-;	dw CE_PlayerBattleStruct_Species ; used in:
-;	                                 ; - transform code
-;									 ; - more change mon pic
-;									 ; - critical hit test
-;	dw CE_PlayerBattleStruct_HP
-;	dw CE_PlayerBattleStruct_PartyPos
-;	dw CE_PlayerBattleStruct_Status
-;	dw CE_PlayerBattleStruct_Type1
-;	dw CE_PlayerBattleStruct_Type2
-;	dw CE_PlayerBattleStruct_Moves
-;	dw CE_PlayerBattleStruct_Level
-;	dw CE_PlayerBattleStruct_MaxHP
-;	dw CE_PlayerBattleStruct_Attack
-;	dw CE_PlayerBattleStruct_Defense
-;	dw CE_PlayerBattleStruct_Speed
-;	dw CE_PlayerBattleStruct_Special
-;	dw CE_PlayerBattleStruct_PP
+CE_EnemyBattleStruct_BaseExp:
+	call CheckIfFirstRunthrough
+	ret nz
+	call Random
+	ld [wEnemyMonBaseExp], a
+	ret
+
+CE_PlayerBattleStruct_PP:
+	call CheckIfFirstRunthrough
+	ret nz
+	call Random
+	and $3
+	ld e, a
+	ld d, $0
+	ld hl, wBattleMonPP
+	add hl, de
+	ld a, [hRandomSub]
+	ld [hl], a
+	ret
+	
+CE_ForceAnimationsOn:
+	ld hl, wOptions
+	res 7, [hl]
+	ret

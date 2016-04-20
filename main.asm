@@ -4900,8 +4900,6 @@ INCLUDE "data/mapHeaders/fuchsiacity.asm"
 INCLUDE "data/mapObjects/fuchsiacity.asm"
 FuchsiaCityBlocks: INCBIN "maps/fuchsiacity.blk"
 
-INCLUDE "engine/play_time.asm"
-
 INCLUDE "scripts/pallettown.asm"
 INCLUDE "scripts/viridiancity.asm"
 INCLUDE "scripts/pewtercity.asm"

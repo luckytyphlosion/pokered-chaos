@@ -207,3 +207,13 @@ CE_InaccessibleTilemap:
 .reset
 	res 0, [hl]
 	ret
+	
+CE_InaccessibleOAM:
+	call CheckIfNextFrameWillReplaceChaosEffect
+	ld hl, wChaosFlags1
+	jr z, .reset
+	set 2, [hl]
+	ret
+.reset
+	res 2, [hl]
+	ret

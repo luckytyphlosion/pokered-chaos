@@ -25,7 +25,9 @@ VBlank::
 	call UpdateMovingBgTiles
 	call WriteCGBPalettes
 	
-	call $ff80 ; hOAMDMA
+	ld a, [wChaosFlags1]
+	bit 2, a
+	call z, $ff80 ; hOAMDMA
 
 	ld a, [wd732]
 	bit 7, a
@@ -39,13 +41,9 @@ VBlank::
 
 	call Random
 
-	ld a, [H_VBLANKOCCURRED]
-	and a
-	jr z, .skipZeroing
 	xor a
 	ld [H_VBLANKOCCURRED], a
 
-.skipZeroing
 	ld a, [H_FRAMECOUNTER]
 	and a
 	jr z, .skipDec
@@ -75,9 +73,7 @@ VBlank::
 .audio3
 	call Audio3_UpdateMusic
 .afterMusic
-
-	
-	callba TrackPlayTime ; keep track of time played
+	call TrackPlayTime ; keep track of time played
 
 	ld a, [hDisableJoypadPolling]
 	and a
@@ -103,6 +99,15 @@ VBlank::
 	call WaitForNonVBlankPeriod
 	call RedrawRowOrColumnInaccessible
 .doNotCopyScreenEdge
+	ld a, [wChaosFlags1]
+	bit 2, a
+	jr z, .afterInaccessibleFunctions
+	call WaitForNonVBlankPeriod
+	ld hl, wOAMBuffer
+	ld de, $fe00
+	ld bc, 4 * 40
+	call CopyData
+.afterInaccessibleFunctions
 	ld a, [wVBlankSavedROMBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

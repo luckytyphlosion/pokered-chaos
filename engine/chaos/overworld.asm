@@ -26,6 +26,7 @@ ChaosEffectOverworldJumptable::
 	dw CE_SSD_SpriteImageBaseOffset ; "any" value, continuous
 	dw CE_Superfast
 	dw CE_InaccessibleRowColumnRedraw
+	dw CE_InaccessibleOAM
 ChaosEffectOverworldJumptableEnd::
 
 CE_RandomMonPoison:
@@ -73,6 +74,30 @@ CE_RandomJackMode:
 	xor a
 	ld [wUpdateSpritesEnabled], a
 	ret
+
+CE_CheckEncounterData:
+; check if grass/water has data
+; return nonzero in d if grass data
+; return nonzero in e if water data
+	ld hl, wGrassMons
+	ld d, 0
+	ld c, 10
+.loop1
+	ld a, [hli]
+	or d
+	ld d, a
+	dec c
+	jr nz, .loop1
+	ld hl, wWaterMons
+	ld e, 0
+	ld c, 10
+.loop2
+	ld a, [hli]
+	or e
+	ld e, a
+	dec c
+	jr nz, .loop2
+	ret
 	
 CE_RandomEncounterRate:
 	call CheckIfFirstRunthrough
@@ -80,13 +105,17 @@ CE_RandomEncounterRate:
 	call Random
 	ld [wNewEncounterRateFlags], a
 .applySubmod
+	call CE_CheckEncounterData
+	ld a, d
+	or e
+	ret z
 	ld a, [wNewEncounterRateFlags]
 	and $3
 	add a
-	ld e, a
-	ld d, $0
+	ld c, a
+	ld b, $0
 	ld hl, RandomEncounterRateSubmods
-	add hl, de
+	add hl, bc
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -105,9 +134,16 @@ RandomEncRate_AddRange0to31:
 	and $1f
 AddRandomEncRateDeltas:
 	ld b, a
+	ld a, d
+	and a
+	jr z, .tryWater
 	ld a, [wGrassRate]
 	add b
 	ld [wGrassRate], a
+.tryWater
+	ld a, e
+	and a
+	ret z
 	ld a, [wWaterRate]
 	add b
 	ld [wWaterRate], a
@@ -121,13 +157,22 @@ RandomEncRate_AddRangeNEG31to31:
 	jr AddRandomEncRateDeltas
 	
 RandomEncRate_Write0:
-	xor a
+	ld b, 0
 	jr WriteNewEncounterRates
 	
 RandomEncRate_Write255:
-	ld a, 255
+	ld b, 255
 WriteNewEncounterRates:
+	ld a, d
+	and a
+	jr z, .tryWater
+	ld a, b
 	ld [wGrassRate], a
+.tryWater
+	ld a, e
+	and a
+	ret z
+	ld a, b
 	ld [wWaterRate], a
 	ret	
 

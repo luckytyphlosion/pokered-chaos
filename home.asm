@@ -921,13 +921,13 @@ InterlaceMergeSpriteBuffers:: ; 16ea (0:16ea)
 	ld b, a
 	jp CopyVideoData
 
-
 INCLUDE "data/collision.asm"
 INCLUDE "home/copy2.asm"
 INCLUDE "home/text.asm"
 INCLUDE "home/vcopy.asm"
 INCLUDE "home/init.asm"
 INCLUDE "home/vblank.asm"
+INCLUDE "home/play_time.asm"
 INCLUDE "home/fade.asm"
 INCLUDE "home/serial.asm"
 INCLUDE "home/timer.asm"
@@ -4342,6 +4342,7 @@ GivePokemon::
 
 INCLUDE "home/random.asm"
 INCLUDE "home/predef.asm"
+INCLUDE "home/chaos.asm"
 
 
 UpdateCinnabarGymGateTileBlocks:: ; 3ead (0:3ead)
@@ -4478,6 +4479,4 @@ TextPredefs::
 	add_tx_pre BookOrSculptureText                  ; 40
 	add_tx_pre ElevatorText                         ; 41
 	add_tx_pre PokemonStuffText                     ; 42
-	
-INCLUDE "home/chaos.asm"
 

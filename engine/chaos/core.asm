@@ -10,28 +10,13 @@ DoChaosEffects:
 	and a
 	ret nz
 	call CheckChaosEffectType
+	call DoSpecialCEFunctionsBasedOnIGT
+
+DoChaosEffect:
+	ld a, [hChaosEffectType]
 	call GetChaosEffectListPointer
 	ld d, h
 	ld e, l
-	ld a, [wPlayTimeFrames]
-	and a
-	jr nz, .runEffects
-	ld a, [wPlayTimeSeconds]
-	and a ; 0 seconds
-	jr z, .replaceChaosEffect
-	cp 30
-	jr nz, .runEffects
-.replaceChaosEffect
-	call ReplaceChaosEffect
-	ld a, [hRandomAdd]
-	and a
-	jr nz, .runEffects
-	push hl
-	push de
-	call CE_AddNewChaosEffect
-	pop de
-	pop hl
-.runEffects
 	call GetChaosJumptable
 .loop
 	ld a, [de]
@@ -61,11 +46,47 @@ DoChaosEffects:
 	pop de
 	jr .loop
 	
+DoSpecialCEFunctionsBasedOnIGT:
+	ld a, [wPlayTimeSeconds]
+	ld b, a
+	ld a, [wPlayTimeFrames]
+	ld c, a
+	
+	call CheckIfNextFrameWillReplaceChaosEffect
+	jr z, .runThroughAllInactiveEffects
+	call CheckIfFirstRunthrough
+	ret nz
+; replace chaos effects
+	call ReplaceChaosEffect
+	ld a, [hRandomAdd]
+	and a
+	jr nz, .runThroughAllInactiveEffects
+	call CE_AddNewChaosEffect
+.runThroughAllInactiveEffects
+	ld a, [hChaosEffectType]
+	push af ; save current chaos effect
+	call .doInactiveChaosEffect
+	call .doInactiveChaosEffect
+	pop af
+	ld [hChaosEffectType], a
+	ret
+.doInactiveChaosEffect
+	call AdvanceChaosEffect
+	jp DoChaosEffect
+	
+AdvanceChaosEffect:
+	ld a, [hChaosEffectType]
+	inc a
+	cp CHAOS_TYPE_MENU + 1
+	jr c, .writeNewEffect
+	xor a
+.writeNewEffect
+	ld [hChaosEffectType], a
+	ret
+	
 ReplaceChaosEffect:
 	ld a, [hChaosEffectType]
 	push af
-	push de
-	push hl
 	xor a
 .loop
 	ld [hChaosEffectType], a
@@ -77,8 +98,6 @@ ReplaceChaosEffect:
 	inc a
 	cp 3
 	jr nz, .loop
-	pop hl
-	pop de
 	pop af
 	ld [hChaosEffectType], a
 	ret
@@ -262,7 +281,7 @@ GetRandomRangeFor16BitValue:
 	and c
 	cp e
 	jr z, .gotLowerByte
-	jr nc, .handleEightBitValue
+	jr nc, .eightBitValueRejectionLoop
 .gotLowerByte
 	ld e, a
 	ret

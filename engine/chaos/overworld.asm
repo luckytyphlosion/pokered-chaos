@@ -177,24 +177,25 @@ WriteNewEncounterRates:
 	ret	
 
 CE_SSD_GetRandomSpriteIndex_IgnorePlayer:
-	ld b, $1
-	jr CE_SSD_GetRandomSpriteIndexCommon
+; get a random sprite between 1 and wNumSprites
+; and return in a
+	call CE_SSD_GetRandomSpriteIndex
+	inc a
+	ret
 	
 ; fallthrough
 CE_SSD_GetRandomSpriteIndex:
 ; get a random sprite between 0 and wNumSprites
 ; and return in a
-	ld b, $0
-CE_SSD_GetRandomSpriteIndexCommon:
 	ld a, [wNumSprites]
-	inc a
+	ld b, a
+	call DetermineBitmaskForRandomRange
 	ld c, a
+	inc b
 .randomLoop
 	call Random
-	and $f
+	and c
 	cp b
-	jr c, .randomLoop
-	cp c
 	jr nc, .randomLoop
 	ret
 	

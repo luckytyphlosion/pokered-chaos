@@ -1576,6 +1576,10 @@ JoypadOverworld:: ; 0f4d (0:0f4d)
 	ld a,[hJoyHeld]
 	and a,D_DOWN | D_UP | D_LEFT | D_RIGHT | B_BUTTON | A_BUTTON
 	jr nz,.notForcedDownwards
+	ld a, [wJoyIgnore]
+	and D_DOWN | D_UP | D_LEFT | D_RIGHT | B_BUTTON | A_BUTTON
+	cp D_DOWN | D_UP | D_LEFT | D_RIGHT | B_BUTTON | A_BUTTON
+	jr z, .notForcedDownwards
 	ld a, [wd730]
 	bit 5, a
 	jr nz, .notForcedDownwards

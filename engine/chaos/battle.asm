@@ -525,7 +525,9 @@ GetRandomRangeOfRandomRange_8Bit:
 	call Random
 	and c
 	cp b
+	jr z, .gotNumber
 	jr nc, .randomLoop
+.gotNumber
 	ld b, a
 	inc b
 	ret

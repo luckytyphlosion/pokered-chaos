@@ -2981,6 +2981,7 @@ wChaosFlags1::
 ; bit 0: inaccessible tilemap
 ; bit 1: inaccessible row/column redraw
 ; bit 2: inaccessible oam
+; bit 3: force delay frame
 	ds 1
 
 wBeatGymFlags:: ; d72a

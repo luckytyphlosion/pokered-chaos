@@ -130,9 +130,13 @@ DelayFrame::
 
 NOT_VBLANKED EQU 1
 
+	ld a, [wChaosFlags1]
+	bit 3, a
+	jr nz, .delayFrame
 	ld a, [wd732]
 	bit 7, a
 	ret nz
+.delayFrame
 	push hl
 	push bc
 	push de

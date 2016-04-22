@@ -225,11 +225,11 @@ ClearScreen::
 	jp Delay3
 
 SafeDelayFrame:
-	ld a, [wd732]
-	push af
-	res 7, a
-	ld [wd732], a
+	ld a, [wChaosFlags1]
+	set 3, a
+	ld [wChaosFlags1], a
 	call DelayFrame
-	pop af
-	ld [wd732], a
+	ld a, [wChaosFlags1]
+	res 3, a
+	ld [wChaosFlags1], a
 	ret

@@ -46,8 +46,11 @@ AskName: ; 64eb (1:64eb)
 	ld d, h
 	ld e, l
 	ld hl, wcd6d
-	ld bc, NAME_LENGTH
-	jp CopyData
+	ld bc, 10
+	call CopyData
+	ld a, "@"
+	ld [de], a
+	ret
 
 DoYouWantToNicknameText: ; 0x6557
 	TX_FAR _DoYouWantToNicknameText

@@ -2165,7 +2165,9 @@ IsPlayerFacingEdgeOfMap: ; c3ff (3:43ff)
 	push bc
 	ld a, [wSpriteStateData1 + 9] ; player sprite's facing direction
 	srl a
+	srl a
 	and $3
+	add a
 	ld c, a
 	ld b, $0
 	ld hl, .functionPointerTable

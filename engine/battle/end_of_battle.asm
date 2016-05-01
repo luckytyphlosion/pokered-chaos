@@ -61,7 +61,7 @@ EndOfBattle: ; 137aa (4:77aa)
 	ld [hli], a
 	ld [hl], a
 	ld [wListScrollOffset], a
-	ld hl, wPlayerStatsToDouble
+	ld hl, wPlayerUsingTrappingMoveCounter
 	ld b, $18
 .loop
 	ld [hli], a

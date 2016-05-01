@@ -217,13 +217,13 @@ H_VBCOPYSRC EQU $FFC7
 H_VBCOPYDEST EQU $FFC9
 
 ; size of source data for VBlankCopyDouble in 8-byte units
-H_VBCOPYDOUBLESIZE EQU $FFCB
+H_VBCOPYDOUBLESIZE EQU $FFC6
 
 ; source address for VBlankCopyDouble function
-H_VBCOPYDOUBLESRC EQU $FFCC
+H_VBCOPYDOUBLESRC EQU $FFC7
 
 ; destination address for VBlankCopyDouble function
-H_VBCOPYDOUBLEDEST EQU $FFCE
+H_VBCOPYDOUBLEDEST EQU $FFC9
 
 ; controls whether a row or column of 2x2 tile blocks is redrawn in V-blank
 ; 00 = no redraw
@@ -313,6 +313,8 @@ hLastOBP0 EQU $FFF1
 hLastOBP1 EQU $FFF2
 
 H_WHOSETURN EQU $FFF3 ; 0 on player’s turn, 1 on enemy’s turn
+
+hSavedSpritePixelValue EQU $FFF5
 
 ; bit 0: draw HP fraction to the right of bar instead of below (for party menu)
 ; bit 1: menu is double spaced

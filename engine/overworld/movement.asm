@@ -219,17 +219,6 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	call GetTileSpriteStandsOn
 	call Random
 .determineDirection
-	ld b, a
-	ld a, [wCurSpriteMovement2]
-	cp $d0
-	jr z, .moveDown    ; movement byte 2 = $d0 forces down
-	cp $d1
-	jr z, .moveUp      ; movement byte 2 = $d1 forces up
-	cp $d2
-	jr z, .moveLeft    ; movement byte 2 = $d2 forces left
-	cp $d3
-	jr z, .moveRight   ; movement byte 2 = $d3 forces right
-	ld a, b
 	cp $40             ; a < $40: down (or left)
 	jr nc, .notDown
 	ld a, [wCurSpriteMovement2]
@@ -240,7 +229,7 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	add hl, de         ; move tile pointer two rows down
 	lb de, 1, 0
 	lb bc, 4, SPRITE_FACING_DOWN
-	jr TryWalking_CheckForCorruption
+	jr .checkForcedDirection
 .notDown
 	cp $80             ; $40 <= a < $80: up (or right)
 	jr nc, .notUp
@@ -252,7 +241,7 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	add hl, de         ; move tile pointer two rows up
 	lb de, -1, 0
 	lb bc, 8, SPRITE_FACING_UP
-	jr TryWalking_CheckForCorruption
+	jr .checkForcedDirection
 .notUp
 	cp $c0             ; $80 <= a < $c0: left (or up)
 	jr nc, .notLeft
@@ -264,7 +253,7 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	dec hl             ; move tile pointer two columns left
 	lb de, 0, -1
 	lb bc, 2, SPRITE_FACING_LEFT
-	jr TryWalking_CheckForCorruption
+	jr .checkForcedDirection
 .notLeft              ; $c0 <= a: right (or down)
 	ld a, [wCurSpriteMovement2]
 	cp $1
@@ -273,6 +262,27 @@ UpdateNPCSprite: ; 4ed1 (1:4ed1)
 	inc hl
 	inc hl             ; move tile pointer two columns right
 	lb de, 0, 1
+	lb bc, 1, SPRITE_FACING_RIGHT
+; fallthrough
+.checkForcedDirection
+	ld a, [wCurSpriteMovement2]
+	cp $d0
+	jr nz, .notFacingDown    ; movement byte 2 = $d0 forces down
+	lb bc, 4, SPRITE_FACING_DOWN
+	jr TryWalking_CheckForCorruption
+.notFacingDown
+	cp $d1
+	jr nz, .notFacingUp      ; movement byte 2 = $d1 forces up
+	lb bc, 8, SPRITE_FACING_UP
+	jr TryWalking_CheckForCorruption
+.notFacingUp
+	cp $d2
+	jr nz, .notFacingLeft    ; movement byte 2 = $d2 forces left
+	lb bc, 2, SPRITE_FACING_LEFT
+	jr TryWalking_CheckForCorruption
+.notFacingLeft
+	cp $d3
+	jr nz, TryWalking_CheckForCorruption ; movement byte 2 = $d3 forces right
 	lb bc, 1, SPRITE_FACING_RIGHT
 ; fallthrough
 	
@@ -559,10 +569,6 @@ InitializeSpriteStatus: ; 50ad (1:50ad)
 
 ; calculates the spprite's scrren position form its map position and the player position
 InitializeSpriteScreenPosition: ; 50bd (1:50bd)
-	ld a, [wSSDCorruptionFlags]
-	and %1100 ; is there xy pixel pos corruption?
-	ret nz ; if so, do not re-adjust sprite xy
-	
 	ld h, $c2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
@@ -775,24 +781,30 @@ CanWalkOntoTile: ; 516e (1:516e)
 	ld a, [hli]        ; c2x2 (sprite Y displacement, initialized at $8, keep track of where a sprite did go)
 	bit 7, d           ; check if going upwards (d=$ff)
 	jr nz, .upwards
+; downwards
+	bit 0, d           ; check if going downwards (d=$1)
+	jr z, .checkHorizontal
 	add d
-	cp $5
-	jr c, .impassable  ; if c2x2+d < 5, don't go ;bug: this tests probably were supposed to prevent sprites
+	cp $d
+	jr nc, .impassable  ; if c2x2+d < 5, don't go ; bug: this tests probably were supposed to prevent sprites
 	jr .checkHorizontal                          ; from walking out too far, but this line makes sprites get stuck
 .upwards                                         ; whenever they walked upwards 5 steps
-	sub $1                                       ; on the other hand, the amount a sprite can walk out to the
-	jr c, .impassable  ; if d2x2 == 0, don't go  ; right of bottom is not limited (until the counter overflows)
+	cp $3
+	jr c, .impassable
+	dec a                                       ; on the other hand, the amount a sprite can walk out to the
 .checkHorizontal
 	ld d, a
 	ld a, [hl]         ; c2x3 (sprite X displacement, initialized at $8, keep track of where a sprite did go)
 	bit 7, e           ; check if going left (e=$ff)
 	jr nz, .left
 	add e
-	cp $5              ; compare, but no conditional jump like in the vertical check above (bug?)
+	cp $d              ; compare, but no conditional jump like in the vertical check above (bug?)
+	jr nc, .impassable
 	jr .passable
 .left
-	sub $1
+	cp $3
 	jr c, .impassable  ; if d2x3 == 0, don't go
+	dec a
 .passable
 	ld [hld], a        ; update c2x3
 	ld [hl], d         ; update c2x2

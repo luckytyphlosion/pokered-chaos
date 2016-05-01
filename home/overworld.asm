@@ -1148,10 +1148,12 @@ IsSpriteInFrontOfPlayer2:: ; 0b6d (0:0b6d)
 	jr z,.nextSprite
 	inc l
 	ld a,[hli] ; Y location
+	call FixSpritePixelYLocation
 	cp b
 	jr nz,.nextSprite
 	inc l
 	ld a,[hl] ; X location
+	call FixSpritePixelXLocation
 	cp c
 	jr z,.foundSpriteInFrontOfPlayer
 .nextSprite
@@ -1172,6 +1174,42 @@ IsSpriteInFrontOfPlayer2:: ; 0b6d (0:0b6d)
 	set 7,[hl] ; set flag to make the sprite face the player
 	ld a,e
 	ld [hSpriteIndexOrTextID],a
+	ret
+
+FixSpritePixelYLocation:
+	ld [hSavedSpritePixelValue], a
+	and $f
+	cp $c
+	jr z, FixSpritePixelLocation_done
+	jr nc, .useOldUpperNybble
+	cp $4
+	jr nc, .incrementUpperNybble
+.useOldUpperNybble
+	ld a, [hSavedSpritePixelValue]
+	and $f0
+	add $c
+	ret
+.incrementUpperNybble
+	ld a, [hSavedSpritePixelValue]
+	and $f0
+	add $1c
+	ret
+FixSpritePixelLocation_done:
+	ld a, [hSavedSpritePixelValue]
+	ret
+	
+FixSpritePixelXLocation:
+	ld [hSavedSpritePixelValue], a
+	and $f
+	jr z, FixSpritePixelLocation_done
+	cp $8
+	ld a, [hSavedSpritePixelValue]
+	jr nc, .incrementUpperNybble
+	and $f0
+	ret
+.incrementUpperNybble
+	and $f0
+	add $10
 	ret
 
 ; function to check if the player will jump down a ledge and check if the tile ahead is passable (when not surfing)

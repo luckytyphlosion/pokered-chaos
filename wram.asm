@@ -1561,6 +1561,7 @@ wBattleMon:: battle_struct wBattleMon ; d014
 wTrainerClass:: ; d031
 	ds 1
 
+wSSDWhichCoord::
 	ds 1
 
 wTrainerPicPointer:: ; d033
@@ -1640,12 +1641,10 @@ wCriticalHitOrOHKO:: ; d05e
 wMoveMissed:: ; d05f
 	ds 1
 
-wPlayerStatsToDouble:: ; d060
-; always 0
+wPlayerUsingTrappingMoveCounter:: ; d060
 	ds 1
 
-wPlayerStatsToHalve:: ; d061
-; always 0
+wPlayerUsingBideMoveCounter:: ; d061
 	ds 1
 
 wPlayerBattleStatus1:: ; d062
@@ -1676,12 +1675,10 @@ wPlayerBattleStatus3:: ; d064
 ; bit 3 - tranformed
 	ds 1
 
-wEnemyStatsToDouble:: ; d065
-; always 0
+wEnemyUsingTrappingMoveCounter:: ; d065
 	ds 1
 
-wEnemyStatsToHalve:: ; d066
-; always 0
+wEnemyUsingBideMoveCounter:: ; d066
 	ds 1
 
 wEnemyBattleStatus1:: ; d067
@@ -1706,6 +1703,7 @@ wPlayerDisabledMove:: ; d06d
 ; low nibble: disable turns left
 	ds 1
 
+wPlayerThrashingCounter::
 	ds 1
 
 wEnemyNumAttacksLeft:: ; d06f
@@ -1723,7 +1721,7 @@ wEnemyDisabledMove:: ; d072
 ; low nibble: disable turns left
 	ds 1
 
-wSSDWhichCoord::
+wEnemyThrashingCounter::
 	ds 1
 
 wPlayerNumHits:: ; d074
@@ -2918,7 +2916,11 @@ wFossilMon:: ; d710
 ; mon that will result from the item
 	ds 1
 
-	ds 2
+wPlayerNumAttacksLeftReloadValue::
+	ds 1
+	
+wEnemyNumAttacksLeftReloadValue::
+	ds 1
 
 wEnemyMonOrTrainerClass:: ; d713
 ; trainer classes start at 200
@@ -2982,6 +2984,10 @@ wChaosFlags1::
 ; bit 1: inaccessible row/column redraw
 ; bit 2: inaccessible oam
 ; bit 3: force delay frame
+; bit 4: force enemy rage
+; bit 5: force player rage
+; bit 6: force enemy confusion
+; bit 7: force player confusion
 	ds 1
 
 wBeatGymFlags:: ; d72a
@@ -3069,6 +3075,15 @@ wBeatLorelei:: ; d734
 ; the game uses this to tell when Elite 4 events need to be reset
 	ds 1
 	
+wChaosEffectVSFlags::
+; bit 0: force enemy multi hit
+; bit 1: force player multi hit
+; bit 2: force enemy flinch
+; bit 3: force player flinch
+; bit 4: force enemy charging up
+; bit 5: force player charging up
+; bit 6: force enemy to have sub
+; bit 7: force player to have sub
 	ds 1
 
 wd736:: ; d736
@@ -3172,6 +3187,15 @@ wCurMapScript:: ; da39
 wCurMoveCorruptionValuesEnemy::
 	ds 6
 	
+wChaosEffectVSFlags2::
+; bit 0: enemy storing energy
+; bit 1: player storing energy
+; bit 2: enemy thrashing about
+; bit 3: player thrashing about
+; bit 4: enemy using trapping move
+; bit 5: player using trapping move
+; bit 6: enemy needs to recharge
+; bit 7: player needs to recharge
 	ds 1
 
 wPlayTimeHours:: ; da41

@@ -30,7 +30,6 @@ ChaosEffectOverworldJumptable::
 ChaosEffectOverworldJumptableEnd::
 
 CE_RandomMonPoison:
-	ret
 	call CheckIfFirstRunthrough
 	ret nz
 	ld a, [wPartyCount]
@@ -179,7 +178,12 @@ WriteNewEncounterRates:
 CE_SSD_GetRandomSpriteIndex_IgnorePlayer:
 ; get a random sprite between 1 and wNumSprites
 ; and return in a
-	call CE_SSD_GetRandomSpriteIndex
+	ld a, [wNumSprites]
+	and a
+	ret z
+	dec a
+	ld b, a
+	call CE_SSD_GetRandomSpriteIndex_IgnorePlayer_Continue
 	inc a
 	ret
 	
@@ -189,6 +193,7 @@ CE_SSD_GetRandomSpriteIndex:
 ; and return in a
 	ld a, [wNumSprites]
 	ld b, a
+CE_SSD_GetRandomSpriteIndex_IgnorePlayer_Continue:
 	call DetermineBitmaskForRandomRange
 	ld c, a
 	inc b
@@ -424,79 +429,37 @@ CE_SSD_DeltaCommon:
 ;	ret
 	
 CE_SSD_PixelYPos:
-	ld hl, wSSDCorruptionFlags
-	set 2, [hl]
-	
 	call CheckIfNextFrameWillReplaceChaosEffect
-	jr nz, .doNotResetFlag
-	res 2, [hl]
-.doNotResetFlag
+	ld a, $3c
+	jr z, .resetEffects
 	call CheckIfFirstRunthrough
 	jr nz, .applyEffects
-	call CE_SSD_GetRandomSpriteIndex
-	ld [wSSDWhichSprite + 2], a
 .randomLoop
 	call Random
 	cp $90
 	jr nc, .randomLoop
-	ld c, a
-	ld a, [hRandomSub]
-	and $f
-	jr nz, .doNotAddOffset
-	call Random
-	and $f
-	add c
-	ld c, a
-.doNotAddOffset
-	ld a, c
 	ld [wSSDCorruptionValues + 2], a
 .applyEffects
-	ld a, [wSSDWhichSprite + 2]
-	swap a
-	ld c, a
-	ld b, $0
-	ld hl, wSpriteStateData1 + 4
-	add hl, bc
 	ld a, [wSSDCorruptionValues + 2]
-	ld [hl], a
+.resetEffects
+	ld [wSpriteStateData1 + 4], a
 	ret
 	
 CE_SSD_PixelXPos:
-	ld hl, wSSDCorruptionFlags
-	set 3, [hl]
-	
 	call CheckIfNextFrameWillReplaceChaosEffect
-	jr nz, .doNotResetFlag
-	res 3, [hl]
-.doNotResetFlag
+	ld a, $40
+	jr z, .resetEffects
 	call CheckIfFirstRunthrough
 	jr nz, .applyEffects
-	call CE_SSD_GetRandomSpriteIndex
-	ld [wSSDWhichSprite + 3], a
 .randomLoop
 	call Random
 	cp $a0
 	jr nc, .randomLoop
-	ld c, a
-	ld a, [hRandomSub]
-	and $f
-	jr nz, .doNotAddOffset
-	call Random
-	and $f
-	add c
-	ld c, a
-.doNotAddOffset
-	ld a, c
 	ld [wSSDCorruptionValues + 3], a
 .applyEffects
-	ld a, [wSSDWhichSprite + 3]
-	swap a
-	ld c, a
-	ld b, $0
-	ld hl, wSpriteStateData1 + 6
-	add hl, bc
 	ld a, [wSSDCorruptionValues + 3]
-	ld [hl], a
+.resetEffects
+	ld [wSpriteStateData1 + 6], a
 	ret
 	
 CE_SSD_IntraAnimFrameCounter:
@@ -622,7 +585,6 @@ CE_SSD_GridYPos:
 	
 	ld a, [wCurMapHeight]
 	add a
-	add $8
 	ld b, a
 	inc b
 	call DetermineBitmaskForRandomRange
@@ -632,7 +594,7 @@ CE_SSD_GridYPos:
 	and c
 	cp b
 	jr nc, .randomHeightLoop
-	sub $4
+	add $4
 	ld [wSSDCorruptionValues + 7], a
 .writeValue
 	ld a, [wSSDWhichSprite + 9]
@@ -658,7 +620,6 @@ CE_SSD_GridXPos:
 	
 	ld a, [wCurMapWidth]
 	add a
-	add $8
 	ld b, a
 	inc b
 	call DetermineBitmaskForRandomRange
@@ -668,7 +629,7 @@ CE_SSD_GridXPos:
 	and c
 	cp b
 	jr nc, .randomHeightLoop
-	sub $4
+	add $4
 	ld [wSSDCorruptionValues + 8], a
 .writeValue
 	ld a, [wSSDWhichSprite + 10]
@@ -761,7 +722,7 @@ CE_SSD_SpriteImageBaseOffset:
 	swap a
 	ld c, a
 	ld b, $0
-	ld hl, wSpriteStateData2 + $1e
+	ld hl, wSpriteStateData2 + $e
 	add hl, bc
 	ld a, [wSSDCorruptionValues + 9]
 	ld [hl], a

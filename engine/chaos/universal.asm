@@ -55,14 +55,17 @@ CE_JoypadChaos:
 .rejectionSampleLoop
 	call Random
 	and $7
-	cp $7
+	cp $5
 	jr nc, .rejectionSampleLoop
 	ld [wJoypadChaosIndex], a
-	cp $3
+	ld b, a
 	ld a, [hRandomSub]
+	and $7
+	ld c, a
+	ld a, b
+	cp $3
 	jr nc, .writeRandomValue
 ; button identifier
-	and $7
 	ld hl, ButtonIdentifiers
 	ld c, a
 	ld b, $0
@@ -97,14 +100,11 @@ JoypadChaosSubEffects:
 	dw CE_ForceButton
 	dw CE_ReleaseButton
 	dw CE_InvertButton
-; random button modifier
-	dw CE_RandomButtonOR
-	dw CE_RandomButtonXOR
-	dw CE_RandomButtonNAND
-; odd one out
-	dw CE_ComplementJoypad
+	dw CE_RotateButtonsLeft
+	dw CE_RotateButtonsRight
 	
-CE_RandomButtonOR:
+; random button modifier
+
 CE_ForceButton:
 	ld a, [wJoyInputModifier]
 	ld b, a
@@ -113,7 +113,6 @@ CE_ForceButton:
 	ld [hJoyInput], a
 	ret
 	
-CE_RandomButtonNAND:
 CE_ReleaseButton:
 	ld a, [wJoyInputModifier]
 	cpl
@@ -123,7 +122,6 @@ CE_ReleaseButton:
 	ld [hJoyInput], a
 	ret
 
-CE_RandomButtonXOR:
 CE_InvertButton:
 	ld a, [wJoyInputModifier]
 	ld b, a
@@ -132,10 +130,30 @@ CE_InvertButton:
 	ld [hJoyInput], a
 	ret
 	
-CE_ComplementJoypad:
+CE_RotateButtonsLeft:
+	ld a, [wJoyInputModifier]
+	ld b, a
+	inc b
 	ld a, [hJoyInput]
-	cpl
-	ld [hJoyInput], a
+	jr .handleLoop
+.loop
+	rlca
+.handleLoop
+	dec b
+	jr nz, .loop
+	ret
+	
+CE_RotateButtonsRight:
+	ld a, [wJoyInputModifier]
+	ld b, a
+	inc b
+	ld a, [hJoyInput]
+	jr .handleLoop
+.loop
+	rrca
+.handleLoop
+	dec b
+	jr nz, .loop
 	ret
 	
 CE_RandomPalettes:
@@ -167,6 +185,7 @@ CE_RandomPalettes:
 ; registers auto incremented
 	jp CopyData
 .predefinedPalette
+	ld a, b
 	and $f
 	ld b, a
 	ld a, [wCurPalette]

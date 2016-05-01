@@ -59,6 +59,43 @@ ChaosEffectBattleJumptable::
 	dw CE_PlayerBattleStruct_PP
 	dw CE_InaccessibleOAM
 	dw CE_ForceAnimationsOn
+	dw CE_EVS_StoringEnergy
+	dw CE_EVS_ThrashingAbout
+	dw CE_EVS_AttackingMultipleTimes
+	dw CE_EVS_Flinched
+	dw CE_EVS_ChargingUp
+	dw CE_EVS_UsingTrappingMove
+	dw CE_EVS_Confused
+	dw CE_EVS_UsingXAccuracy
+	dw CE_EVS_ProtectedByMist
+	dw CE_EVS_GettingPumped
+	dw CE_EVS_HasSubstituteUp
+	dw CE_EVS_NeedsToRecharge
+	dw CE_EVS_UsingRage
+	dw CE_EVS_Seeded
+	dw CE_EVS_BadlyPoisoned
+	dw CE_EVS_HasLightScreenUp
+	dw CE_EVS_HasReflectUp
+	dw CE_EVS_Transformed
+	dw CE_PVS_StoringEnergy
+	dw CE_PVS_ThrashingAbout
+	dw CE_PVS_AttackingMultipleTimes
+	dw CE_PVS_Flinched
+	dw CE_PVS_ChargingUp
+	dw CE_PVS_UsingTrappingMove
+	dw CE_PVS_Confused
+	dw CE_PVS_UsingXAccuracy
+	dw CE_PVS_ProtectedByMist
+	dw CE_PVS_GettingPumped
+	dw CE_PVS_HasSubstituteUp
+	dw CE_PVS_NeedsToRecharge
+	dw CE_PVS_UsingRage
+	dw CE_PVS_Seeded
+	dw CE_PVS_BadlyPoisoned
+	dw CE_PVS_HasLightScreenUp
+	dw CE_PVS_HasReflectUp
+	dw CE_PVS_Transformed
+
 
 ;	dw CE_EnemyMonSpecies2 ; used in:
 ;	                       ; - give pokemon code
@@ -692,4 +729,224 @@ CE_PlayerBattleStruct_PP:
 CE_ForceAnimationsOn:
 	ld hl, wOptions
 	res 7, [hl]
+	ret
+
+CE_EVS_AttackingMultipleTimes:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags
+	set 0, [hl]
+	ret
+
+CE_PVS_AttackingMultipleTimes:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags
+	set 1, [hl]
+	ret
+
+CE_EVS_StoringEnergy:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags2
+	set 0, [hl]
+	ret
+	
+CE_PVS_StoringEnergy:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags2
+	set 1, [hl]
+	ret
+	
+CE_EVS_ThrashingAbout:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags2
+	set 2, [hl]
+	ret
+	
+CE_PVS_ThrashingAbout:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags2
+	set 3, [hl]
+	ret
+
+CE_EVS_Flinched:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags
+	set 2, [hl]
+	ret
+	
+CE_PVS_Flinched:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags
+	set 3, [hl]
+	ret
+
+CE_EVS_ChargingUp:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags
+	set 4, [hl]
+	ret
+
+CE_PVS_ChargingUp:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags
+	set 5, [hl]
+	ret
+	
+CE_EVS_UsingTrappingMove:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags2
+	set 4, [hl]
+	ret
+
+CE_PVS_UsingTrappingMove:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags2
+	set 5, [hl]
+	ret
+
+CE_EVS_UsingXAccuracy:
+	ld hl, wEnemyBattleStatus2
+	set UsingXAccuracy, [hl]
+	ret
+
+CE_PVS_UsingXAccuracy:
+	ld hl, wPlayerBattleStatus2
+	set UsingXAccuracy, [hl]
+	ret
+
+CE_EVS_ProtectedByMist:
+	ld hl, wEnemyBattleStatus2
+	set ProtectedByMist, [hl]
+	ret
+
+CE_PVS_ProtectedByMist:
+	ld hl, wPlayerBattleStatus2
+	set ProtectedByMist, [hl]
+	ret
+	
+CE_EVS_GettingPumped:
+	ld hl, wEnemyBattleStatus2
+	set GettingPumped, [hl]
+	ret
+
+CE_PVS_GettingPumped:
+	ld hl, wPlayerBattleStatus2
+	set GettingPumped, [hl]
+	ret
+	
+CE_EVS_HasSubstituteUp:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags
+	set 6, [hl]
+	ret
+
+CE_PVS_HasSubstituteUp:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags
+	set 7, [hl]
+	ret
+	
+CE_EVS_NeedsToRecharge:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags2
+	set 6, [hl]
+	ret
+	
+CE_PVS_NeedsToRecharge:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosEffectVSFlags2
+	set 7, [hl]
+	ret
+	
+CE_EVS_UsingRage:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosFlags1
+	set 4, [hl]
+	ret
+	
+CE_PVS_UsingRage:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosFlags1
+	set 5, [hl]
+	ret
+	
+CE_EVS_Seeded:
+	ld hl, wEnemyBattleStatus2
+	set Seeded, [hl]
+	ret
+	
+CE_PVS_Seeded:
+	ld hl, wPlayerBattleStatus2
+	set Seeded, [hl]
+	ret
+	
+CE_EVS_BadlyPoisoned:
+	ld hl, wEnemyBattleStatus3
+	set BadlyPoisoned, [hl]
+	ret
+
+CE_PVS_BadlyPoisoned:
+	ld hl, wPlayerBattleStatus3
+	set BadlyPoisoned, [hl]
+	ret
+
+CE_EVS_HasLightScreenUp:
+	ld hl, wEnemyBattleStatus3
+	set HasLightScreenUp, [hl]
+	ret
+
+CE_PVS_HasLightScreenUp:
+	ld hl, wPlayerBattleStatus3
+	set HasLightScreenUp, [hl]
+	ret
+
+CE_EVS_HasReflectUp:
+	ld hl, wEnemyBattleStatus3
+	set HasReflectUp, [hl]
+	ret
+
+CE_PVS_HasReflectUp:
+	ld hl, wPlayerBattleStatus3
+	set HasReflectUp, [hl]
+	ret
+	
+CE_EVS_Transformed:
+	ld hl, wEnemyBattleStatus3
+	set Transformed, [hl]
+	ret
+	
+CE_PVS_Transformed:
+	ld hl, wPlayerBattleStatus3
+	set Transformed, [hl]
+	ret
+	
+CE_EVS_Confused:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosFlags1
+	set 6, [hl]
+	ret
+	
+CE_PVS_Confused:
+	call CheckIfFirstRunthrough
+	ret nz
+	ld hl, wChaosFlags1
+	set 7, [hl]
 	ret

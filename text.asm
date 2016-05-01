@@ -1302,14 +1302,7 @@ _MoveIsDisabledText::
 	prompt
 
 _MonName1Text::
-	text $5a, "@@"
-
-_Used1Text::
-	db $0
-	line "used @@"
-
-_Used2Text::
-	db $0
+	text $5a
 	line "used @@"
 
 _InsteadText::
@@ -1318,25 +1311,6 @@ _InsteadText::
 
 _CF4BText::
 	TX_RAM wcf4b
-	text "@"
-
-_ExclamationPoint1Text::
-	text "!"
-	done
-
-_ExclamationPoint2Text::
-	text "!"
-	done
-
-_ExclamationPoint3Text::
-	text "!"
-	done
-
-_ExclamationPoint4Text::
-	text "!"
-	done
-
-_ExclamationPoint5Text::
 	text "!"
 	done
 

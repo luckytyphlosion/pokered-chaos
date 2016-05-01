@@ -11,23 +11,20 @@ TrackPlayTime: ; 18dee (6:4dee)
 ; frames
 	ld hl, wPlayTimeFrames
 	inc [hl]
-	cp [hl]
+	sub [hl]
 	ret nz
-	xor a
 	ld [hld], a
 ; seconds
 	ld a, b
 	inc [hl]
-	cp [hl]
+	sub [hl]
 	ret nz
-	xor a
 	ld [hld], a
 ; minutes
 	ld a, b
 	inc [hl]
-	cp [hl]
+	sub [hl]
 	ret nz
-	xor a
 	ld [hld], a
 	dec hl ; skip wPlayTimeMaxed
 ; hours

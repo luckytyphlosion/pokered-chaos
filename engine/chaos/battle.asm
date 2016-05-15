@@ -95,6 +95,9 @@ ChaosEffectBattleJumptable::
 	dw CE_PVS_HasLightScreenUp
 	dw CE_PVS_HasReflectUp
 	dw CE_PVS_Transformed
+	dw CE_2BPPIs1BPP
+	dw CE_1BPPIs2BPP
+	dw CE_RandomTrainerClass
 
 
 ;	dw CE_EnemyMonSpecies2 ; used in:
@@ -949,4 +952,14 @@ CE_PVS_Confused:
 	ret nz
 	ld hl, wChaosFlags1
 	set 7, [hl]
+	ret
+	
+CE_RandomTrainerClass:
+	call CheckIfNextFrameWillReplaceChaosEffect
+	ld hl, wChaosFlags2
+	jr z, .reset
+	set 2, [hl]
+	ret
+.reset
+	res 2, [hl]
 	ret

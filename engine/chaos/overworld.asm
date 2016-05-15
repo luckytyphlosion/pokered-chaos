@@ -27,6 +27,8 @@ ChaosEffectOverworldJumptable::
 	dw CE_Superfast
 	dw CE_InaccessibleRowColumnRedraw
 	dw CE_InaccessibleOAM
+	dw CE_2BPPIs1BPP
+	dw CE_1BPPIs2BPP
 ChaosEffectOverworldJumptableEnd::
 
 CE_RandomMonPoison:

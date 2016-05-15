@@ -236,3 +236,23 @@ CE_InaccessibleOAM:
 .reset
 	res 2, [hl]
 	ret
+	
+CE_2BPPIs1BPP:
+	call CheckIfNextFrameWillReplaceChaosEffect
+	ld hl, wChaosFlags2
+	jr z, .reset
+	set 0, [hl]
+	ret
+.reset
+	res 0, [hl]
+	ret
+	
+CE_1BPPIs2BPP:
+	call CheckIfNextFrameWillReplaceChaosEffect
+	ld hl, wChaosFlags2
+	jr z, .reset
+	set 1, [hl]
+	ret
+.reset
+	res 1, [hl]
+	ret

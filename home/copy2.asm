@@ -75,7 +75,11 @@ CopyVideoData::
 ; Wait for the next VBlank, then copy c 2bpp
 ; tiles from b:de to hl, 8 tiles at a time.
 ; This takes c/8 frames.
-
+	ld a, [wChaosFlags2]
+	bit 0, a ; 2bpp is 1bpp effect
+	jp nz, CopyVideoDataDouble_2bppIs1bpp
+	
+CopyVideoData_1bppIs2bpp:
 	ld a, [H_AUTOBGTRANSFERENABLED]
 	push af
 	xor a ; disable auto-transfer while copying
@@ -143,6 +147,11 @@ CopyVideoDataDouble::
 ; Wait for the next VBlank, then copy c 1bpp
 ; tiles from b:de to hl, 8 tiles at a time.
 ; This takes c/8 frames.
+	ld a, [wChaosFlags2]
+	bit 1, a ; 1bpp is 2bpp
+	jp nz, CopyVideoData_1bppIs2bpp
+	
+CopyVideoDataDouble_2bppIs1bpp:
 	ld a, [H_AUTOBGTRANSFERENABLED]
 	push af
 	xor a ; disable auto-transfer while copying

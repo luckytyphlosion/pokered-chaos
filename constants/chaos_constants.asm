@@ -51,6 +51,8 @@ const_value = 1
 	ce_const SUPERFAST
 	ce_const INACCESSIBLE_ROW_COLUMN
 	ce_const INACCESSIBLE_OAM
+	ce_const TWOBPP_IS_1BPP
+	ce_const ONEBPP_IS_2BPP
 	
 ; battle
 const_value = 1
@@ -154,7 +156,9 @@ ce_type = CHAOS_TYPE_BATTLE
 	ce_const PVS_HAS_LIGHT_SCREEN_UP
 	ce_const PVS_HAS_REFLECT_UP
 	ce_const PVS_TRANSFORMED
-	
+	ce_const TWOBPP_IS_1BPP
+	ce_const ONEBPP_IS_2BPP
+	ce_const RANDOM_TRAINERCLASS
 	
 ; menu
 const_value = 1
@@ -169,3 +173,5 @@ ce_type = CHAOS_TYPE_MENU
 	ce_const INACCESSIBLE_VRAM
 	ce_const SUPERFAST
 	ce_const INACCESSIBLE_TILEMAP
+	ce_const TWOBPP_IS_1BPP
+	ce_const ONEBPP_IS_2BPP

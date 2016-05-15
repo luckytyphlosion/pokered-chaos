@@ -1566,6 +1566,7 @@ wSSDWhichCoord::
 
 wTrainerPicPointer:: ; d033
 	ds 2
+
 	ds 1
 
 wTempMoveNameBuffer:: ; d036
@@ -2932,6 +2933,10 @@ wPlayerJumpingYScreenCoordsIndex:: ; d714
 wRivalStarter:: ; d715
 	ds 1
 
+wChaosFlags2::
+; bit 0: 2bpp is 1bpp
+; bit 1: 1bpp is 2bpp
+; bit 2: random trainer class
 	ds 1
 
 wPlayerStarter:: ; d717

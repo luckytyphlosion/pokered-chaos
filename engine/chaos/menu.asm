@@ -7,4 +7,6 @@ ChaosEffectMenuJumptable::
 	dw CE_RandomPalettes
 	dw CE_InaccessibleVRAM
 	dw CE_InaccessibleTilemap
+	dw CE_2BPPIs1BPP
+	dw CE_1BPPIs2BPP
 ChaosEffectMenuJumptableEnd::

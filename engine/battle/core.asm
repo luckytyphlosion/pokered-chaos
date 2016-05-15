@@ -7041,6 +7041,17 @@ InitBattleCommon: ; 3ef3d (f:6f3d)
 	sub 200
 	jp c, InitWildBattle
 	ld [wTrainerClass], a
+	ld a, [wChaosFlags2]
+	bit 2, a
+	jr z, .notRandomTrainerClass
+.randomTrainerLoop
+	call Random
+	and $3f
+	cp LANCE
+	jr nc, .randomTrainerLoop
+	inc a
+	ld [wTrainerClass], a
+.notRandomTrainerClass
 	call GetTrainerInformation
 	callab ReadTrainer
 	call DoBattleTransitionAndInitBattleVariables

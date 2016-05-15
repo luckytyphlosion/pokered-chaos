@@ -20,8 +20,6 @@ VBlank::
 .ok
 	call AutoBgMapTransfer
 	call RedrawRowOrColumn
-	call VBlankCopy
-	call VBlankCopyDouble
 	call UpdateMovingBgTiles
 	call WriteCGBPalettes
 	
@@ -51,6 +49,13 @@ VBlank::
 	ld [H_FRAMECOUNTER], a
 
 .skipDec
+	ld a, [H_VBCOPYFRAMECOUNTER]
+	and a
+	jr z, .skipDec2
+	dec a
+	ld [H_VBCOPYFRAMECOUNTER], a
+.skipDec2
+
 	call FadeOutAudio
 	
 	callab Music_DoLowHealthAlarm

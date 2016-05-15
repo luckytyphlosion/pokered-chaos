@@ -1,36 +1,15 @@
-; this function seems to be used only once
-; it store the address of a row and column of the VRAM background map in hl
-; INPUT: h - row, l - column, b - high byte of background tile map address in VRAM
-GetRowColAddressBgMap:: ; 1cdd (0:1cdd)
-	xor a
-	srl h
-	rr a
-	srl h
-	rr a
-	srl h
-	rr a
-	or l
-	ld l,a
-	ld a,b
-	or h
-	ld h,a
-	ret
-
 ; clears a VRAM background map with blank space tiles
 ; INPUT: h - high byte of background tile map address in VRAM
 ClearBgMap:: ; 1cf0 (0:1cf0)
-	ld a," "
-	jr .next
-	ld a,l
-.next
-	ld de,$400 ; size of VRAM background map
-	ld l,e
+	ld a, " "
+	ld de, $400 ; size of VRAM background map
+	ld l, e
 .loop
-	ld [hli],a
+	ld [hli], a
 	dec e
-	jr nz,.loop
+	jr nz, .loop
 	dec d
-	jr nz,.loop
+	jr nz, .loop
 	ret
 	
 WriteCGBPalettes::
@@ -302,155 +281,6 @@ TransferBgRows:: ; 1d9e (0:1d9e)
 	ld l, a
 	ld sp, hl
 	ret
-
-VBlankCopyDouble::
-; Copy [H_VBCOPYDOUBLESIZE] 1bpp tiles
-; from H_VBCOPYDOUBLESRC to H_VBCOPYDOUBLEDEST.
-
-; While we're here, convert to 2bpp.
-; The process is straightforward:
-; copy each byte twice.
-
-	ld a, [H_VBCOPYDOUBLESIZE]
-	and a
-	ret z
-
-	ld hl, [sp + 0]
-	ld a, h
-	ld [H_SPTEMP], a
-	ld a, l
-	ld [H_SPTEMP + 1], a
-
-	ld a, [H_VBCOPYDOUBLESRC]
-	ld l, a
-	ld a, [H_VBCOPYDOUBLESRC + 1]
-	ld h, a
-	ld sp, hl
-
-	ld a, [H_VBCOPYDOUBLEDEST]
-	ld l, a
-	ld a, [H_VBCOPYDOUBLEDEST + 1]
-	ld h, a
-
-	ld a, [H_VBCOPYDOUBLESIZE]
-	ld b, a
-	xor a ; transferred
-	ld [H_VBCOPYDOUBLESIZE], a
-
-.loop
-	rept 3
-	pop de
-	ld [hl], e
-	inc l
-	ld [hl], e
-	inc l
-	ld [hl], d
-	inc l
-	ld [hl], d
-	inc l
-	endr
-
-	pop de
-	ld [hl], e
-	inc l
-	ld [hl], e
-	inc l
-	ld [hl], d
-	inc l
-	ld [hl], d
-	inc hl
-	dec b
-	jr nz, .loop
-
-	ld a, l
-	ld [H_VBCOPYDOUBLEDEST], a
-	ld a, h
-	ld [H_VBCOPYDOUBLEDEST + 1], a
-
-	ld hl, [sp + 0]
-	ld a, l
-	ld [H_VBCOPYDOUBLESRC], a
-	ld a, h
-	ld [H_VBCOPYDOUBLESRC + 1], a
-
-	ld a, [H_SPTEMP]
-	ld h, a
-	ld a, [H_SPTEMP + 1]
-	ld l, a
-	ld sp, hl
-
-	ret
-
-
-VBlankCopy::
-; Copy [H_VBCOPYSIZE] 2bpp tiles (or 16 * [H_VBCOPYSIZE] tile map entries)
-; from H_VBCOPYSRC to H_VBCOPYDEST.
-
-; Source and destination addresses are updated,
-; so transfer can continue in subsequent calls.
-
-	ld a, [H_VBCOPYSIZE]
-	and a
-	ret z
-
-	ld hl, [sp + 0]
-	ld a, h
-	ld [H_SPTEMP], a
-	ld a, l
-	ld [H_SPTEMP + 1], a
-
-	ld a, [H_VBCOPYSRC]
-	ld l, a
-	ld a, [H_VBCOPYSRC + 1]
-	ld h, a
-	ld sp, hl
-
-	ld a, [H_VBCOPYDEST]
-	ld l, a
-	ld a, [H_VBCOPYDEST + 1]
-	ld h, a
-
-	ld a, [H_VBCOPYSIZE]
-	ld b, a
-	xor a ; transferred
-	ld [H_VBCOPYSIZE], a
-
-.loop
-	rept 7
-	pop de
-	ld [hl], e
-	inc l
-	ld [hl], d
-	inc l
-	endr
-
-	pop de
-	ld [hl], e
-	inc l
-	ld [hl], d
-	inc hl
-	dec b
-	jr nz, .loop
-
-	ld a, l
-	ld [H_VBCOPYDEST], a
-	ld a, h
-	ld [H_VBCOPYDEST + 1], a
-
-	ld hl, [sp + 0]
-	ld a, l
-	ld [H_VBCOPYSRC], a
-	ld a, h
-	ld [H_VBCOPYSRC + 1], a
-
-	ld a, [H_SPTEMP]
-	ld h, a
-	ld a, [H_SPTEMP + 1]
-	ld l, a
-	ld sp, hl
-
-	ret
-
 
 UpdateMovingBgTiles::
 ; Animate water and flower

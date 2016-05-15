@@ -31,6 +31,9 @@ UpdatePlayerSprite: ; 4e31 (1:4e31)
 	ld a, [wSSDWhichSprite + 7]
 	and a
 	jr nz, .doNotForceFacing
+	call Random
+	and $1
+	jr nz, .doNotForceFacing
 	ld a, [wSSDCorruptionValues + 5]
 	jr .next
 .doNotForceFacing

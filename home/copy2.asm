@@ -37,6 +37,40 @@ CopyDataDouble:
 	jr nz, .expandloop
 	ret
 	
+WaitUntilHBlankStartPeriod:
+	ld a, [rLY]
+	cp $90
+	jr nc, .inVBlank
+	cp $7e
+	call nc, SafeDelayFrame
+.inVBlank
+	ld a, [rSTAT]
+	and $3
+	jr z, WaitUntilHBlankStartPeriod
+.waitForHBlankLoop
+	ld a, [rSTAT]
+	and $3
+	jr nz, .waitForHBlankLoop
+	ret
+	
+SetVCopyForcedDelay:
+; save number of tiles to copy to simulate the delay in vanilla pokered
+; first, divide the number of tiles by 8
+	push bc
+	ld a, c ; save number of tiles in a
+	srl c
+	srl c
+	srl c ; divide by 8
+; check for lower 3 bits of tile count
+	and %111 ; if tile count isn't a multiple of 8, increase the frame count
+	jr z, .doNotIncreaseFrameCount
+	inc c
+.doNotIncreaseFrameCount
+	ld a, c
+	ld [H_VBCOPYFRAMECOUNTER], a
+	pop bc
+	ret
+	
 CopyVideoData::
 ; Wait for the next VBlank, then copy c 2bpp
 ; tiles from b:de to hl, 8 tiles at a time.
@@ -53,15 +87,14 @@ CopyVideoData::
 	ld a, b
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
-
-	ld a, [wd736]
-	bit 3, a
-	jr z, .regularCopy
+; set forced delay
+	call SetVCopyForcedDelay
+; swap hl and de
 	push hl
 	ld h, d
 	ld l, e
 	pop de
-	
+; get raw byte count for copy
 	swap c
 	ld a,$f
 	and c
@@ -69,28 +102,35 @@ CopyVideoData::
 	ld a,$f0
 	and c
 	ld c,a
-	
+; check for inaccessible vram copies
+	ld a, [wd736]
+	bit 3, a
+	jr z, .regularCopy
 	call CopyData
 	jr .doneInaccessibleCopy
 .regularCopy
-	ld a, e
-	ld [H_VBCOPYSRC], a
-	ld a, d
-	ld [H_VBCOPYSRC + 1], a
-
-	ld a, l
-	ld [H_VBCOPYDEST], a
-	ld a, h
-	ld [H_VBCOPYDEST + 1], a
-
-.loop
-	ld a, c
-	cp 8
-	jr nc, .keepgoing
-
-.done
-	ld [H_VBCOPYSIZE], a
-	call SafeDelayFrame
+; copy 2 bytes every frame, using hblank
+; first, divide bc by 2 to account for the double copy
+	srl b
+	rr c
+; now copy every hblank period
+.copyLoop
+	call WaitUntilHBlankStartPeriod
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hli]
+	ld [de], a
+	inc de
+	dec bc
+	ld a, b
+	or c
+	jr nz, .copyLoop
+; forced delay to simulate the original vcopy delay
+	ld a, [H_VBCOPYFRAMECOUNTER]
+	and a
+	ld c, a
+	call nz, DelayFrames
 .doneInaccessibleCopy
 	pop af
 	ld [H_LOADEDROMBANK], a
@@ -98,15 +138,6 @@ CopyVideoData::
 	pop af
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
-
-.keepgoing
-	ld a, 8
-	ld [H_VBCOPYSIZE], a
-	call SafeDelayFrame
-	ld a, c
-	sub 8
-	ld c, a
-	jr .loop
 
 CopyVideoDataDouble::
 ; Wait for the next VBlank, then copy c 1bpp
@@ -129,24 +160,38 @@ CopyVideoDataDouble::
 	call CopyDataDouble
 	jr .doneInaccesibleCopy
 .regularCopy
-	ld a, e
-	ld [H_VBCOPYDOUBLESRC], a
-	ld a, d
-	ld [H_VBCOPYDOUBLESRC + 1], a
-
-	ld a, l
-	ld [H_VBCOPYDOUBLEDEST], a
-	ld a, h
-	ld [H_VBCOPYDOUBLEDEST + 1], a
-
-.loop
-	ld a, c
-	cp 8
-	jr nc, .keepgoing
-
-.done
-	ld [H_VBCOPYDOUBLESIZE], a
-	call SafeDelayFrame
+; get frame count for forced delay
+	call SetVCopyForcedDelay
+; get raw byte count at the same time
+	push hl
+; use hl for 16-bit arithmetic to quadruple tile count
+	ld h, $0
+	ld l, c
+	add hl, hl
+	add hl, hl
+	ld b, h
+	ld c, l
+; restore hl
+	pop hl
+.copyLoop
+	call WaitUntilHBlankStartPeriod
+	ld a, [de]
+	ld [hli], a
+	ld [hli], a
+	inc de
+	ld a, [de]
+	ld [hli], a
+	ld [hli], a
+	inc de
+	dec bc
+	ld a, b
+	or c
+	jr nz, .copyLoop
+; forced delay to simulate the original vcopy delay
+	ld a, [H_VBCOPYFRAMECOUNTER]
+	and a
+	ld c, a
+	call nz, DelayFrames
 .doneInaccesibleCopy
 	pop af
 	ld [H_LOADEDROMBANK], a
@@ -154,15 +199,6 @@ CopyVideoDataDouble::
 	pop af
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
-
-.keepgoing
-	ld a, 8
-	ld [H_VBCOPYDOUBLESIZE], a
-	call SafeDelayFrame
-	ld a, c
-	sub 8
-	ld c, a
-	jr .loop
 
 ClearScreenArea::
 ; Clear tilemap area cxb at hl.
